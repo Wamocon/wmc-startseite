@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Startseite WMC &amp; WMA</title>
+  <meta name="description" content="Gemeinsame Startseite mit allen wichtigen Links der WAMOCON GmbH und der WAMOCON Academy GmbH.">
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header class="kopf">
+    <div class="kopf-innen">
+      <img class="logo-wmc" src="assets/logo-wmc.png" alt="WAMOCON IT-Testmanagement" width="auto" height="48">
+      <span class="kopf-trenner" aria-hidden="true"></span>
+      <img class="logo-wma" src="assets/logo-wma.png" alt="WAMOCON Academy IT-Bildungszentrum" width="auto" height="45">
+    </div>
+  </header>
+
+  <main class="hauptteil">
+    <div class="hauptteil-innen">
+
+      <section class="begruesung">
+        <h1 id="begruesung-text">Guten Tag</h1>
+        <div class="suche">
+          <label class="visuell-versteckt" for="suchfeld">Anwendung oder Link suchen</label>
+          <svg class="suche-lupe" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="11" cy="11" r="6.5"/>
+            <path d="M16 16l4.5 4.5"/>
+          </svg>
+          <input id="suchfeld" type="search" placeholder="Anwendung oder Link suchen" autocomplete="off" spellcheck="false">
+        </div>
+      </section>
+
+      <section class="favoriten" id="favoriten" aria-labelledby="favoriten-ueberschrift">
+        <div class="abschnitts-kopf">
+          <h2 id="favoriten-ueberschrift">Meine Favoriten</h2>
+          <button type="button" id="bearbeiten" class="bearbeiten">Bearbeiten</button>
+        </div>
+        <div id="favoriten-inhalt" class="favoriten-inhalt" aria-live="polite">
+          <p class="hinweis">Favoriten werden geladen …</p>
+        </div>
+      </section>
+
+      <section class="alle-links" id="alle-links" aria-labelledby="alle-links-ueberschrift">
+        <div class="abschnitts-kopf">
+          <h2 id="alle-links-ueberschrift">Alle Links</h2>
+          <p id="infozeile" class="infozeile" aria-live="polite"></p>
+        </div>
+        <div id="bereiche" class="karten-raster"></div>
+        <div id="kein-treffer" class="kein-treffer" hidden>
+          <p>Kein Treffer für <span id="kein-treffer-suchtext"></span>. Fehlt ein Link?</p>
+          <a id="kein-treffer-hilfe" href="#">IT-Ticket erstellen</a>
+        </div>
+        <div id="fehler" class="fehler" role="alert" hidden>
+          <svg class="fehler-warnung" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 7.5v5.5M12 16.5v.01"/>
+          </svg>
+          <span>Die Linkliste konnte nicht geladen werden. Bitte wenden Sie sich an die IT.</span>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="fuss">
+    <div class="fuss-innen">
+      <p class="fuss-text">Links gepflegt von der IT. Ihre Favoriten werden in diesem Browser gespeichert.</p>
+      <p class="fuss-rechts">Link fehlt oder ist veraltet? <a id="fuss-hilfe" href="#">IT-Ticket erstellen</a></p>
+    </div>
+  </footer>
+</body>
+</html>
