@@ -1,10 +1,10 @@
 # Übergabe WMCNL-2781
 
-Ausgefüllt von: Gregor · Datum: TT.MM.JJJJ · Letzter Commit: HASH
+Ausgefüllt von: Gregor · Datum: 21.10.2026 · Letzter Commit: siehe Meldung auf der Karte
 
 ## Zusammenfassung
 
-Zwei bis fünf Sätze: was fertig ist, was nicht, was Erwin wissen muss.
+Die Browser-Startseite für WMC und WMA ist komplett gebaut: Prüfskript mit Unit-Tests (grün, 28 Tests), die drei Seitendateien nach DESIGN.md, nginx-Konfiguration, Dockerfile und docker-compose.yml sowie die README. Das Prüfskript meldet für die Beispieldatei „OK: 6 Bereiche, 20 Links“. Was ich wegen der Umgebung nicht testen konnte (Browser, HTTP-Server, Docker), ist in der Spalte „Stand“ mit „teilweise“ und in „Annahmen und Abweichungen“ ausgewiesen — das soll Erwin bei der Abnahme nachprüfen.
 
 ## Stand je Anforderung
 
@@ -12,59 +12,74 @@ Stand ist „erfüllt“, „teilweise“ oder „nicht erfüllt“. Nachweis: D
 
 | ID | Stand | Nachweis / Hinweis |
 |---|---|---|
-| F-01 | offen | |
-| F-02 | offen | |
-| F-03 | offen | |
-| F-04 | offen | |
-| F-10 | offen | |
-| F-11 | offen | |
-| F-20 | offen | |
-| F-21 | offen | |
-| F-22 | offen | |
-| F-23 | offen | |
-| F-24 | offen | |
-| F-25 | offen | |
-| F-30 | offen | |
-| F-31 | offen | |
-| F-32 | offen | |
-| F-33 | offen | |
-| F-34 | offen | |
-| F-40 | offen | |
-| F-41 | offen | |
-| F-42 | offen | |
-| F-50 | offen | |
-| N-01 | offen | |
-| N-02 | offen | |
-| N-03 | offen | |
-| N-04 | offen | |
-| N-05 | offen | |
-| V-01 | offen | |
-| V-02 | offen | |
-| V-03 | offen | |
-| V-04 | offen | |
-| V-05 | offen | |
-| V-06 | offen | |
-| V-07 | offen | |
-| V-08 | offen | |
-| V-09 | offen | |
-| V-10 | offen | |
-| B-01 | offen | |
-| B-02 | offen | |
-| B-03 | offen | |
-| B-04 | offen | |
-| T-01 | offen | |
-| T-02 | offen | |
-| P-01 | offen | |
-| P-02 | offen | |
-| P-03 | offen | |
-| P-04 | offen | |
+| F-01 | erfüllt | `site/app.js`: `lade()` ruft `fetch("daten/links.json")` auf; Bereiche und Links werden in Dateireihenfolge gerendert (`renderBereiche`). |
+| F-02 | teilweise | `site/app.js`: Fehlerzustand mit `role="alert"` und dem Text; `fetch` ist in `try/catch`, kein unbehandelter Fehler. Nicht im Browser geprüft (kein HTTP-Server / Browser verfügbar). |
+| F-03 | erfüllt | `site/app.js`: nur `textContent` und `createElement`; kein `innerHTML`/`document.write`. `urlIstGueltig()` filtert Links ohne `http(s)://`. |
+| F-04 | erfüllt | `site/app.js`: `kuerzelFormen()` nimmt die ersten zwei Buchstaben, überspringt Ziffern/Satzzeichen, macht Großbuchstaben. |
+| F-10 | erfüllt | `site/index.html`: WMC-Logo (48 px, `alt="WAMOCON IT-Testmanagement"`), Trennstrich, WMA-Logo (45 px, `alt="WAMOCON Academy IT-Bildungszentrum"`); 4-px-Linie in `site/styles.css` (`.kopf`). |
+| F-11 | erfüllt | `site/app.js`: `begruesungText()` nach Uhrzeit; genau eine `h1` in `site/index.html`. |
+| F-20 | erfüllt | `site/index.html`: `<input type="search">` mit Platzhalter und zugeordnetem, visuell verstecktem `<label>`. |
+| F-21 | erfüllt | `site/app.js`: `renderSuche()`/`linkPasst()` filtern bei jeder Eingabe, groß/klein egal, Karten ohne Treffer `hidden`. |
+| F-22 | erfüllt | `site/app.js`: `renderSuche()` setzt die Infozeile (Stand-Datum bzw. Trefferzahl). |
+| F-23 | erfüllt | `site/app.js`: `keinTreffer`-Block mit `hilfe.name`/`hilfe.url`. |
+| F-24 | erfüllt | `site/app.js`: `keydown`-Listener auf `Escape` leert die Suche. |
+| F-25 | erfüllt | `site/app.js`: Suche filtert nur `#bereiche`, nie die Favoriten. |
+| F-30 | erfüllt | `site/app.js`: `renderFavoriten()` baut die Kacheln plus „Hinzufügen“ auf `#alle-links`. |
+| F-31 | erfüllt | `site/app.js`: Stern-Button mit `aria-label="Favorit: NAME"` und `aria-pressed`; Klick nimmt auf oder entfernt. |
+| F-32 | erfüllt | `site/app.js`: Bearbeiten-Button schaltet `bearbeitenModus`; Entfernen-Button + Hinweis im Modus. |
+| F-33 | erfüllt | `site/app.js`: bei leeren Favoriten Hinweis vor „Hinzufügen“. |
+| F-34 | teilweise | `site/app.js`: `speicherLesen`/`speicherSchreiben` mit allen Regeln (Standardfavoriten, leeres Array, unbekannte IDs, gesperrtes localStorage). Nicht im Browser geprüft (keine echte `localStorage`-Umgebung). |
+| F-40 | erfüllt | `site/app.js`: `karteErstellen()` mit `h3`, Markenetikett (WMC/WMA/WMC·WMA) und Academy-Optik (`marke` `wma`). |
+| F-41 | erfüllt | `site/app.js`: Linkzeile mit Kürzel, Name, Beschreibung (Name+Beschreibung als Link) und Stern. |
+| F-42 | erfüllt | `site/app.js`: keine `target="_blank"`; Links öffnen im selben Tab. |
+| F-50 | erfüllt | `site/index.html`: Fuß mit Text und `hilfe`-Link; `site/app.js` füllt `hilfe` ein. |
+| N-01 | erfüllt | Genau `site/index.html`, `site/styles.css`, `site/app.js`; ES-Modul in `index.html`. |
+| N-02 | erfüllt | Schrift aus `site/assets/fonts/`, Logos aus `site/assets/`, SVG im Code; kein `style="…"` im HTML, kein Inline-Skript. |
+| N-03 | teilweise | `lang="de"`, `title`, Fokusrahmen, 44-px-Buttons umgesetzt. axe-core-Prüfung nicht ausgeführt (kein Browser). |
+| N-04 | teilweise | 360-px-Regeln in `site/styles.css` (Media-Query, einspaltig, `max-width:100%`). Visuell nicht bei 360 px geprüft (kein Browser). |
+| N-05 | erfüllt | Nur Farben/Größen/Abstände aus DESIGN.md; kein dunkles Thema. |
+| V-01 | erfüllt | `scripts/pruefe_links.py`: UTF-8 + JSON lesen, fehlende Datei, ungültiges JSON, fehlender Dateiname (Exit-Codes 1/2). Test `TestV01`. |
+| V-02 | erfüllt | Pflichtfelder, Typen, erlaubte Werte, unbekannte Felder. Test `TestV02`. |
+| V-03 | erfüllt | Echtes Kalenderdatum (2026-02-30 ist Fehler). Test `TestV03`. |
+| V-04 | erfüllt | Bereichs-IDs eindeutig. Test `TestV04`. |
+| V-05 | erfüllt | Link-IDs über alle Bereiche eindeutig. Test `TestV05`. |
+| V-06 | erfüllt | `http(s)://` und keine Leerzeichen (auch `hilfe.url`). Test `TestV06`. |
+| V-07 | erfüllt | `standardFavoriten` referenzieren existente Link-IDs. Test `TestV07`. |
+| V-08 | erfüllt | Längen und Muster (ID, Name, Beschreibung, Kürzel). Test `TestV08`. |
+| V-09 | erfüllt | Ausgabe „OK: B Bereiche, L Links“ (Exit 0), Fehlerzeilen „FEHLER: …“ (Exit 1), Fundstellen. Test `TestV09`. |
+| V-10 | erfüllt | Fehlermeldungen auf Deutsch, beschreiben den Grund. Test `TestV10`. |
+| B-01 | teilweise | `Dockerfile` (nginx 1.27.3-alpine, mehrstufig, Prüfskript im Build). Build nicht ausgeführt (kein Docker). |
+| B-02 | teilweise | `docker-compose.yml` (Port 8080, `LINKS_VERZEICHNIS`-Verzeichnis `:ro`, `restart`, `healthcheck`). Nicht gestartet (kein Docker). |
+| B-03 | teilweise | `nginx/startseite.conf`: CSP, `nosniff`, `no-referrer`, `no-cache` für Seite/links.json, 7 Tage für `/assets/`, `server_tokens off`, kein Listing. Nicht per `curl` geprüft (kein Docker). |
+| B-04 | erfüllt | `README.md` (lokal starten, Docker, Links pflegen, Tests). |
+| T-01 | erfüllt | `tests/test_pruefe_links.py`, 28 Tests, alle grün (`python3 -m unittest discover -s tests`). |
+| T-02 | teilweise | Browser-Nachweis nicht möglich (kein Browser verfügbar); Code-Pfade sind oben je ID nachgewiesen. |
+| P-01 | erfüllt | Zweig `gregor/startseite` ab `main`; `main` unverändert. |
+| P-02 | erfüllt | Kleine Commits, deutsche Nachrichten „Bereich: was“. |
+| P-03 | erfüllt | Geschützte Dateien (`docs/AUFTRAG.md`, `ANFORDERUNGEN.md`, `DESIGN.md`, `docs/design/`, `schema/`, `daten/beispiel/links.json`, `site/assets/`, `AGENTS.md`, `CLAUDE.md`) nicht angefasst. |
+| P-04 | erfüllt | Diese Datei, jede ID mit Stand und Nachweis. |
 
 ## Wie getestet
 
-Befehle mit gekürzter Ausgabe, z. B. Unit-Tests, Prüfskript, Browserprüfung (welcher Browser, welche Zustände), `curl -I` gegen den Container.
+- `python3 -m unittest discover -s tests` → 28 Tests, alle grün.
+- `python3 scripts/pruefe_links.py daten/beispiel/links.json` → `OK: 6 Bereiche, 20 Links` (Exit 0).
+- `node --check site/app.js` → keine Syntaxfehler.
+- `git status` auf `gregor/startseite` → Arbeitsverzeichnis sauber; `main` unverändert.
+- Nicht möglich (Umgebung): Browser (Kein-Treffer, Bearbeiten, leere Favoriten, Fehlerzustand, 360 px, axe-core), `python3 -m http.server`, `docker compose up -d --build` und `curl -I`. Dafür kein Werkzeug vorhanden; siehe „Annahmen und Abweichungen“.
 
 ## Annahmen und Abweichungen
 
+- **Browser und HTTP-Server waren nicht verfügbar.** Die Seite konnte nicht geöffnet, geklickt oder bei 360 px geprüft werden; auch `axe-core` lief nicht. Die betroffenen IDs sind als „teilweise“ markiert (F-02, F-34, N-03, N-04, T-02). Das ist kein Hinweis auf einen Fehler, sondern auf fehlende Prüfmöglichkeit — Erwin prüft diese Punkte bei der Abnahme.
+- **Docker war nicht verfügbar.** `Dockerfile`, `docker-compose.yml` und `nginx/startseite.conf` sind geschrieben, aber nicht gebaut/geprüft (B-01 bis B-03).
+- **Kürzel-Fall (F-04).** Bei fehlendem `kuerzel` nimmt die Seite die ersten zwei Buchstaben des Namens und überspringt Ziffern und Satzzeichen (Beispiel „wamocon.com“ → „WA“). Damit sind beide Beispiele aus F-04 abgedeckt.
+- **Trefferzahl (F-22).** „N Treffer“ zählt die sichtbaren Linkzeilen, die auf den Suchtext passen (Plural „Treffer“ ohne Singularform).
+
 ## Offene Fragen
 
+- Keine. Bei Abweichungen zwischen `ANFORDERUNGEN.md` und `DESIGN.md` habe ich die Anforderungen als Maßstab genommen.
+
 ## Hinweise für den Betrieb
+
+- Echte Linkliste: JSON im Format `schema/links.schema.json`, liegt außerhalb des Repos. `LINKS_VERZEICHNIS` auf das Verzeichnis setzen, das die Datei enthält (die Datei heißt dort `links.json`).
+- Nach einer Dateiänderung reicht das Prüfskript: `python3 scripts/pruefe_links.py <Pfad>/links.json`. Ist das Verzeichnis eingebunden, ist die Änderung beim nächsten Öffnen sichtbar, ohne Neustart.
+- Die Seite lädt nichts von fremden Servern; CSP und Header wie in B-03.
