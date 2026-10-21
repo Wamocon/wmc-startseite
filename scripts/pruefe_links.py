@@ -181,7 +181,7 @@ def pruefe(daten, fehler):
             if "id" in bereich:
                 wert = _id_pruefen(bereich["id"], f"{basis}.id", fehler)
                 if wert is not None:
-                    bereich_ids.append(wert)
+                    bereich_ids.append((wert, f"{basis}.id"))
 
             if "titel" in bereich:
                 _zeichenketten_pruefen(bereich["titel"], f"{basis}.titel", fehler,
@@ -220,7 +220,7 @@ def pruefe(daten, fehler):
                     if "id" in link:
                         wert = _id_pruefen(link["id"], f"{lbasis}.id", fehler)
                         if wert is not None:
-                            link_ids.append(wert)
+                            link_ids.append((wert, f"{lbasis}.id"))
 
                     if "name" in link:
                         _zeichenketten_pruefen(link["name"], f"{lbasis}.name",
@@ -247,26 +247,28 @@ def pruefe(daten, fehler):
                                     f"„{kuerzel}“. Erlaubt sind 1 bis 3 Zeichen "
                                     "aus A–Z, Ä, Ö, Ü und 0–9.")
 
-    # V-04: Bereichs-IDs eindeutig
-    for wert in set(bereich_ids):
-        if bereich_ids.count(wert) > 1:
+    # V-04: Bereichs-IDs eindeutig, Fundstelle der doppelten Stelle (V-09).
+    for wert, fundstelle in bereich_ids:
+        if sum(1 for w, _ in bereich_ids if w == wert) > 1:
             fehler.append(
-                f"bereiche: Die Bereich-ID „{wert}“ kommt mehrfach vor. "
+                f"{fundstelle}: Die Bereich-ID „{wert}“ kommt mehrfach vor. "
                 "Jede Bereich-ID darf nur einmal vorkommen."
             )
+            break  # eine Meldung je doppelter ID
 
-    # V-05: Link-IDs über alle Bereiche eindeutig
-    for wert in set(link_ids):
-        if link_ids.count(wert) > 1:
+    # V-05: Link-IDs über alle Bereiche eindeutig, Fundstelle je Stelle (V-09).
+    for wert, fundstelle in link_ids:
+        if sum(1 for w, _ in link_ids if w == wert) > 1:
             fehler.append(
-                f"bereiche: Die Link-ID „{wert}“ kommt mehrfach vor. "
+                f"{fundstelle}: Die Link-ID „{wert}“ kommt mehrfach vor. "
                 "Jede Link-ID darf über alle Bereiche hinweg nur einmal vorkommen."
             )
 
     # V-07: standardFavoriten referenzieren existente Link-IDs
     if isinstance(favoriten, list):
+        bekannte = {wert for wert, _ in link_ids}
         for i, wert in enumerate(favoriten):
-            if isinstance(wert, str) and wert not in link_ids:
+            if isinstance(wert, str) and wert not in bekannte:
                 fehler.append(
                     f"standardFavoriten[{i}]: Die ID „{wert}“ gibt es nicht als "
                     "Link-ID in den Bereichen."

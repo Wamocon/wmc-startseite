@@ -254,6 +254,28 @@ class TestV09(unittest.TestCase):
         finally:
             os.unlink(name)
 
+    def test_doppelte_bereichs_id_weist_die_stelle_aus(self):
+        # A-0038 V-09: Die Fundstelle nennt die Stelle der doppelten ID,
+        # nicht nur „bereiche“.
+        daten = beispieldatei()
+        daten["bereiche"][1]["id"] = "kommunikation"
+        fehler = pruefen(daten)
+        meldungen = [f for f in fehler if "Bereich-ID" in f and "kommunikation" in f]
+        self.assertTrue(meldungen, "keine Meldung zur doppelten Bereich-ID")
+        for meldung in meldungen:
+            # Die Stelle muss in der Form „bereiche[I].id“ beginnen.
+            self.assertRegex(meldung, r"^bereiche\[\d+\]\.id: ")
+
+    def test_doppelte_link_id_weist_alle_stellen_aus(self):
+        # A-0038 V-09: Jede Stelle der doppelten Link-ID wird genannt.
+        daten = beispieldatei()
+        daten["bereiche"][1]["links"][0]["id"] = "outlook"
+        fehler = pruefen(daten)
+        meldungen = [f for f in fehler if "Link-ID" in f and "outlook" in f]
+        self.assertEqual(len(meldungen), 2)
+        self.assertIn("bereiche[0].links[0].id", " ".join(meldungen))
+        self.assertIn("bereiche[1].links[0].id", " ".join(meldungen))
+
 
 class TestV10(unittest.TestCase):
     """V-10: Fehlermeldungen auf Deutsch und nachvollziehbar."""
