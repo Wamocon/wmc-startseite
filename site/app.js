@@ -13,6 +13,7 @@ const MARKE_ETIKETT = {
 // ---- Referenzen ----------------------------------------------------------
 const begruesung = document.getElementById("begruesung-text");
 const suchfeld = document.getElementById("suchfeld");
+const favoritenAbschnitt = document.getElementById("favoriten");
 const favoritenInhalt = document.getElementById("favoriten-inhalt");
 const bearbeitenButton = document.getElementById("bearbeiten");
 const BereichsContainer = document.getElementById("bereiche");
@@ -57,6 +58,7 @@ function svgKreuz() {
   svg.setAttribute("viewBox", "0 0 12 12");
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("focusable", "false");
+  svg.classList.add("kreuz");
   const pfad = document.createElementNS("http://www.w3.org/2000/svg", "path");
   pfad.setAttribute("d", "M3 3l6 6M9 3l-6 6");
   svg.appendChild(pfad);
@@ -162,9 +164,12 @@ function linkPasst(link, suchtext) {
 function renderSuche() {
   const suchtext = suchtextNur();
 
+  // Treffer zuerst zählen, dann filtern (F-22).
+  const anzahl = suchtext ? trefferAnzahl() : 0;
+
   if (suchtext) {
     infozeile.textContent =
-      `${trefferAnzahl()} Treffer für „${suchtext}“`;
+      `${anzahl} Treffer für „${suchtext}“`;
   } else {
     infozeile.textContent = `Zentral gepflegt von der IT · Stand ${standDatum(daten.stand)}`;
   }
@@ -200,11 +205,11 @@ function renderSuche() {
 
 function trefferAnzahl() {
   const suchtext = suchtextNur();
-  return Array.from(BereichsContainer.querySelectorAll("[data-link-id]"))
-    .filter((element) => {
-      const einzug = linksById.get(element.getAttribute("data-link-id"));
-      return einzug && linkPasst(einzug.link, suchtext);
-    }).length;
+  let anzahl = 0;
+  for (const [id, einzug] of linksById) {
+    if (linkPasst(einzug.link, suchtext)) anzahl += 1;
+  }
+  return anzahl;
 }
 
 // ---- Favoriten-Render (F-30 bis F-33) -----------------------------------
@@ -254,7 +259,10 @@ function entfernenButton(link) {
   kreis.className = "kreis";
   kreis.appendChild(svgKreuz());
   button.appendChild(kreis);
-  button.addEventListener("click", () => {
+  button.addEventListener("click", (ereignis) => {
+    // F-32: Das Kreuz entfernt den Favoriten und öffnet nicht den Kachel-Link.
+    ereignis.preventDefault();
+    ereignis.stopPropagation();
     favoritUmschalten(link.id);
   });
   return button;
@@ -389,6 +397,8 @@ function urlIstGueltig(url) {
 
 // ---- Fehlerzustand (F-02) ------------------------------------------------
 function fehlerAnzeigen() {
+  // F-02: Die Fehlermeldung steht statt beider Abschnitte.
+  favoritenAbschnitt.hidden = true;
   BereichsContainer.textContent = "";
   BereichsContainer.hidden = true;
   infozeile.textContent = "";
