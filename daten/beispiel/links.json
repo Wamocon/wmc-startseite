@@ -1,0 +1,72 @@
+{
+  "stand": "2026-10-21",
+  "hilfe": {
+    "name": "IT-Ticket erstellen",
+    "url": "https://example.com/it-ticket"
+  },
+  "standardFavoriten": ["outlook", "teams", "jira", "zeiterfassung", "it-ticket"],
+  "bereiche": [
+    {
+      "id": "kommunikation",
+      "titel": "Kommunikation",
+      "marke": "beide",
+      "links": [
+        { "id": "outlook", "name": "Outlook", "beschreibung": "E-Mail und Kalender", "url": "https://outlook.office.com/mail/", "kuerzel": "OL" },
+        { "id": "teams", "name": "Teams", "beschreibung": "Chat und Besprechungen", "url": "https://teams.microsoft.com/", "kuerzel": "TE" },
+        { "id": "sharepoint", "name": "SharePoint", "beschreibung": "Dokumente und Ablage", "url": "https://example.com/sharepoint", "kuerzel": "SP" }
+      ]
+    },
+    {
+      "id": "projekte",
+      "titel": "Projekte & Wissen",
+      "marke": "wmc",
+      "links": [
+        { "id": "jira", "name": "Jira", "beschreibung": "Aufgaben und Tickets", "url": "https://wamocon.atlassian.net/jira", "kuerzel": "JI" },
+        { "id": "confluence", "name": "Confluence", "beschreibung": "Wiki und Dokumentation", "url": "https://wamocon.atlassian.net/wiki", "kuerzel": "CF" },
+        { "id": "testmanagement", "name": "Testmanagement", "beschreibung": "Testfälle und Testläufe", "url": "https://example.com/testmanagement", "kuerzel": "TM" }
+      ]
+    },
+    {
+      "id": "personal",
+      "titel": "Personal & Organisation",
+      "marke": "beide",
+      "links": [
+        { "id": "zeiterfassung", "name": "Zeiterfassung", "beschreibung": "Arbeitszeit buchen", "url": "https://example.com/zeiterfassung", "kuerzel": "ZE" },
+        { "id": "urlaub", "name": "Urlaub & Abwesenheit", "beschreibung": "Anträge stellen", "url": "https://example.com/urlaub", "kuerzel": "UA" },
+        { "id": "reisekosten", "name": "Reisekosten", "beschreibung": "Belege einreichen", "url": "https://example.com/reisekosten", "kuerzel": "RK" },
+        { "id": "handbuch", "name": "Mitarbeiterhandbuch", "beschreibung": "Regeln und Abläufe", "url": "https://example.com/handbuch", "kuerzel": "MH" }
+      ]
+    },
+    {
+      "id": "it",
+      "titel": "IT & Support",
+      "marke": "beide",
+      "links": [
+        { "id": "it-ticket", "name": "IT-Ticket", "beschreibung": "Störung oder Wunsch melden", "url": "https://example.com/it-ticket", "kuerzel": "IT" },
+        { "id": "passwort", "name": "Passwort ändern", "beschreibung": "Konto und Anmeldung", "url": "https://example.com/passwort", "kuerzel": "PW" },
+        { "id": "hardware", "name": "Hardware-Verwaltung", "beschreibung": "Geräte und Inventar", "url": "https://example.com/hardware", "kuerzel": "HW" },
+        { "id": "anleitungen", "name": "IT-Anleitungen", "beschreibung": "Schritt für Schritt erklärt", "url": "https://example.com/anleitungen", "kuerzel": "AL" }
+      ]
+    },
+    {
+      "id": "academy",
+      "titel": "WAMOCON Academy",
+      "marke": "wma",
+      "links": [
+        { "id": "seminarkalender", "name": "Seminarkalender", "beschreibung": "Termine der Academy", "url": "https://example.com/seminarkalender", "kuerzel": "SK" },
+        { "id": "lernplattform", "name": "Lernplattform", "beschreibung": "Kurse und Teilnehmende", "url": "https://example.com/lernplattform", "kuerzel": "LP" },
+        { "id": "pruefungen", "name": "Prüfungen", "beschreibung": "ISTQB-Anmeldungen", "url": "https://example.com/pruefungen", "kuerzel": "PR" },
+        { "id": "schulungsunterlagen", "name": "Schulungsunterlagen", "beschreibung": "Ablage der Kursmaterialien", "url": "https://example.com/schulungsunterlagen", "kuerzel": "SU" }
+      ]
+    },
+    {
+      "id": "websites",
+      "titel": "Websites",
+      "marke": "beide",
+      "links": [
+        { "id": "wamocon-com", "name": "wamocon.com", "beschreibung": "Website der WAMOCON GmbH", "url": "https://wamocon.com", "kuerzel": "WMC" },
+        { "id": "test-it-academy", "name": "test-it-academy.com", "beschreibung": "Website der WAMOCON Academy", "url": "https://test-it-academy.com", "kuerzel": "WMA" }
+      ]
+    }
+  ]
+}

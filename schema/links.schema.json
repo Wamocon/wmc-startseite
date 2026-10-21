@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Wamocon/wmc-startseite/schema/links.schema.json",
+  "title": "Linkliste der Browser-Startseite WMC & WMA",
+  "description": "Vertrag zwischen IT (pflegt die Datei) und Startseite (liest sie). Regeln, die ein Schema nicht ausdrücken kann, stehen in docs/ANFORDERUNGEN.md unter V-01 bis V-10.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["stand", "hilfe", "standardFavoriten", "bereiche"],
+  "properties": {
+    "stand": {
+      "description": "Datum der letzten Änderung, ISO 8601 (JJJJ-MM-TT). Die Seite zeigt es als TT.MM.JJJJ.",
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "hilfe": {
+      "description": "Ziel für „Link fehlt?“ und den Fuß der Seite.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "url"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "url": { "$ref": "#/$defs/url" }
+      }
+    },
+    "standardFavoriten": {
+      "description": "Link-IDs, die ein Nutzer sieht, solange er selbst noch nichts gewählt hat.",
+      "type": "array",
+      "items": { "$ref": "#/$defs/id" },
+      "uniqueItems": true
+    },
+    "bereiche": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/bereich" }
+    }
+  },
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+      "maxLength": 40
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^https?://[^\\s]+$",
+      "maxLength": 500
+    },
+    "bereich": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "titel", "marke", "links"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "titel": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "marke": {
+          "description": "wmc = WAMOCON GmbH, wma = WAMOCON Academy (eigene Optik), beide = gemeinsam genutzt.",
+          "enum": ["wmc", "wma", "beide"]
+        },
+        "links": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/link" }
+        }
+      }
+    },
+    "link": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "beschreibung", "url"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 40 },
+        "beschreibung": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "url": { "$ref": "#/$defs/url" },
+        "kuerzel": {
+          "description": "Ein bis drei Großbuchstaben oder Ziffern. Fehlt das Feld, bildet die Seite das Kürzel selbst (siehe F-04).",
+          "type": "string",
+          "pattern": "^[A-Z0-9ÄÖÜ]{1,3}$"
+        }
+      }
+    }
+  }
+}

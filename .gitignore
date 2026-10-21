@@ -1,0 +1,9 @@
+# Die echte Linkliste gehört nicht ins Repo
+/daten/*
+!/daten/beispiel/
+
+# Lokaler Test der Seite
+/site/daten/
+
+__pycache__/
+*.pyc
