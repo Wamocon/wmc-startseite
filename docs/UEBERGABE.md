@@ -72,6 +72,14 @@ Die Prüfung der A-0037 hat sechs Fehler gefunden; alle sind behoben, je Punkt e
 | B-03 | Sicherheitsheader kamen bei echten Dateien nicht an (nur 404) | CSP, `X-Content-Type-Options`, `Referrer-Policy` in jedem `location`-Block wiederholt | `nginx/startseite.conf` nachgelesen; nginx vererbt `add_header` nur, wenn der `location`-Block keine eigenen hat; nicht per `curl` geprüft (kein Docker) → teilweise |
 | V-09 | Doppelte IDs: Fundstelle nur „bereiche“ | `bereich_ids`/`link_ids` tragen jetzt (Wert, Fundstelle); Meldungen nennen `bereiche[1].id` bzw. `bereiche[0].links[0].id` und `bereiche[1].links[0].id` | Neue Unit-Tests `TestV09.test_doppelte_bereichs_id_weist_die_stelle_aus` und `TestV09.test_doppelte_link_id_weist_alle_stellen_aus`; `python3 -m unittest discover -s tests` → 30 Tests, alle grün |
 
+## Fokus beim Laden (A-0040)
+
+Beim Laden der Seite steht der Cursor im Suchfeld, damit man sofort tippen kann.
+
+| Was vorher | Was jetzt | Wie geprüft |
+|---|---|---|
+| Das Suchfeld hatte nach dem Laden keinen Fokus | `lade()` ruft am Ende `suchfeld.focus({ preventScroll: true })` auf, sobald die Daten geladen sind | Logik in `site/app.js` nachgeprüft; `node --check site/app.js` → keine Syntaxfehler; 30 Unit-Tests grün. Nicht im Browser geprüft (kein Browser verfügbar). |
+
 ## Wie getestet
 
 - `python3 -m unittest discover -s tests` → 30 Tests, alle grün (28 aus A-0037 + 2 neue aus A-0038).

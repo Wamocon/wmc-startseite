@@ -460,6 +460,9 @@ async function lade() {
   renderSterne();
   renderSuche();
   hilfeAnwenden();
+
+  // A-0040: Nach dem Laden steht der Cursor im Suchfeld, damit man sofort tippen kann.
+  suchfeld.focus({ preventScroll: true });
 }
 
 start();
