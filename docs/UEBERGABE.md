@@ -48,9 +48,9 @@ Stand ist „erfüllt“, „teilweise“ oder „nicht erfüllt“. Nachweis: D
 | V-08 | erfüllt | Längen und Muster (ID, Name, Beschreibung, Kürzel). Test `TestV08`. |
 | V-09 | erfüllt | Ausgabe „OK: B Bereiche, L Links“ (Exit 0), Fehlerzeilen „FEHLER: …“ (Exit 1), Fundstellen. Nachbesserung A-0038: doppelte Bereichs- und Link-IDs nennen jetzt die Stelle (`bereiche[1].id`, `bereiche[1].links[0].id`), nicht nur „bereiche“. Tests `TestV09.test_doppelte_bereichs_id_weist_die_stelle_aus` und `TestV09.test_doppelte_link_id_weist_alle_stellen_aus`. |
 | V-10 | erfüllt | Fehlermeldungen auf Deutsch, beschreiben den Grund. Test `TestV10`. |
-| B-01 | teilweise | `Dockerfile` (nginx 1.27.3-alpine, mehrstufig, Prüfskript im Build). Build nicht ausgeführt (kein Docker). |
+| B-01 | teilweise | `Dockerfile` (nginx 1.27.3-alpine, mehrstufig, Prüfskript im Build). Nachbesserung A-0079: die zweite Stufe kopiert jetzt `/app/pruefung-erledigt` aus Stufe 1, die erst nach bestandener Prüfung entsteht; vorher kopierte sie `/dev/null`, das Docker nicht aus einer Stufe übergeben kann, und der Bau brach ab. Build nicht ausgeführt (kein Docker). |
 | B-02 | teilweise | `docker-compose.yml` (Port 8080, `LINKS_VERZEICHNIS`-Verzeichnis `:ro`, `restart`, `healthcheck`). Nicht gestartet (kein Docker). |
-| B-03 | teilweise | `nginx/startseite.conf`: CSP, `nosniff`, `no-referrer`, `no-cache` für Seite/links.json, 7 Tage für `/assets/`, `server_tokens off`, kein Listing. Nachbesserung A-0038: die drei Sicherheitsheader standen nur im `server`-Block, die `location`-Blocks überschrieben sie — jetzt stehen sie in jedem `location`-Block. Nicht per `curl` geprüft (kein Docker). |
+| B-03 | teilweise | `nginx/startseite.conf`: CSP, `nosniff`, `no-referrer`, `no-cache` für Seite/links.json, 7 Tage für `/assets/`, `server_tokens off`, kein Listing. Nachbesserung A-0038: die drei Sicherheitsheader standen nur im `server`-Block, die `location`-Blocks überschrieben sie — jetzt stehen sie in jedem `location`-Block. Nachbesserung A-0079: `location = /` hatte nur `Cache-Control` und verlor dadurch die drei Sicherheitskopfzeilen — jetzt trägt auch sie sie, wörtlich wie `location = /index.html`. Nicht per `curl` geprüft (kein Docker). |
 | B-04 | erfüllt | `README.md` (lokal starten, Docker, Links pflegen, Tests). |
 | T-01 | erfüllt | `tests/test_pruefe_links.py`, 30 Tests, alle grün (`python3 -m unittest discover -s tests`). |
 | T-02 | teilweise | Browser-Nachweis nicht möglich (kein Browser verfügbar); Code-Pfade sind oben je ID nachgewiesen. |
@@ -88,6 +88,15 @@ Die Prüfung im Browser (Werkbank, 27.10.2026) hat zwei Fehler gefunden.
 |---|---|---|---|
 | F-21 | `renderSuche()` setzt `hidden` an den Linkzeilen, aber die CSS-Regel `.linkzeile { display: flex; }` hebt das Attribut wieder auf; dasselbe für `.stern` und `.karten-raster` | `[hidden] { display: none; }`-Regeln für `.linkzeile`, `.stern`, `.karten-raster` und `.abschnitts-kopf` ergänzt | `node --check site/app.js` → keine Syntaxfehler; 30 Unit-Tests grün; Logik in `site/styles.css` nachgeprüft. Nicht im Browser geprüft (kein Browser verfügbar) → teilweise. |
 | F-02 | Im Fehlerzustand blieb die Überschrift „Alle Links“ samt Infozeile über dem Fehlerkasten sichtbar | `fehlerAnzeigen()` setzt jetzt auch `alleLinksKopf.hidden = true`; die `.abschnitts-kopf[hidden]`-Regel in `site/styles.css` blendet sie aus | `node --check site/app.js` → keine Syntaxfehler; 30 Unit-Tests grün; Logik in `site/app.js` und `site/index.html` nachgeprüft. Nicht im Browser geprüft (kein Browser verfügbar) → teilweise. |
+
+## Nachbesserung A-0079 (B-01 und B-03)
+
+Die Werkbank hat die Seite am 27.10.2026 auf der DGX zum ersten Mal mit Docker gebaut (Stand d5eac34) und zwei Punkte gefunden.
+
+| Fehler | Ursache | Was jetzt | Wie geprüft |
+|---|---|---|---|
+| B-01 | Zeile 19 im Dockerfile kopierte `/dev/null` aus Stufe 1; `/dev/null` ist keine Datei, die Docker aus einer Stufe kopieren kann, und der Bau brach ab („failed to calculate checksum … not found“) | Stufe 1 legt nach bestandener Prüfung eine echte Datei an: `RUN python3 scripts/pruefe_links.py daten/beispiel/links.json && touch /app/pruefung-erledigt`; Stufe 2 kopiert sie: `COPY --from=pruefung /app/pruefung-erledigt /tmp/pruefung-erledigt`. Kommentar darüber angepasst | `python3 scripts/pruefe_links.py daten/beispiel/links.json` → `OK: 6 Bereiche, 20 Links` (Exit 0); 30 Unit-Tests grün; `Dockerfile` nachgeprüft, keine Zeile kopiert mehr `/dev/null`. Docker nicht ausgeführt (kein Docker) → teilweise |
+| B-03 | `location = /` setzte nur `Cache-Control`; dadurch verwies nginx auf die eigenen `add_header`-Zeilen und die drei Sicherheitskopfzeilen aus dem `server`-Block kamen bei `/` nicht an | In `location = /` dieselben drei Kopfzeilen wie in `location = /index.html`, wörtlich: `Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy` | `nginx/startseite.conf` nachgeprüft: jeder `location`-Block mit eigenem `add_header` trägt jetzt die drei Sicherheitskopfzeilen; alle übrigen Pfade lieferten in der Probe der Werkbank die richtigen Kopfzeilen. Nicht per `curl` geprüft (kein Docker) → teilweise |
 
 ## Wie getestet
 
