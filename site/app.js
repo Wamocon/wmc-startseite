@@ -14,6 +14,7 @@ const MARKE_ETIKETT = {
 const begruesung = document.getElementById("begruesung-text");
 const suchfeld = document.getElementById("suchfeld");
 const favoritenAbschnitt = document.getElementById("favoriten");
+const alleLinksKopf = document.getElementById("alle-links-kopf");
 const favoritenInhalt = document.getElementById("favoriten-inhalt");
 const bearbeitenButton = document.getElementById("bearbeiten");
 const BereichsContainer = document.getElementById("bereiche");
@@ -399,6 +400,7 @@ function urlIstGueltig(url) {
 function fehlerAnzeigen() {
   // F-02: Die Fehlermeldung steht statt beider Abschnitte.
   favoritenAbschnitt.hidden = true;
+  alleLinksKopf.hidden = true;
   BereichsContainer.textContent = "";
   BereichsContainer.hidden = true;
   infozeile.textContent = "";
