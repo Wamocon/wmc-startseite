@@ -13,13 +13,13 @@ Stand ist „erfüllt“, „teilweise“ oder „nicht erfüllt“. Nachweis: D
 | ID | Stand | Nachweis / Hinweis |
 |---|---|---|
 | F-01 | erfüllt | `site/app.js`: `lade()` ruft `fetch("daten/links.json")` auf; Bereiche und Links werden in Dateireihenfolge gerendert (`renderBereiche`). |
-| F-02 | teilweise | `site/app.js`: `fehlerAnzeigen()` versteckt beide Abschnitte (`favoritenAbschnitt.hidden = true`, `BereichsContainer.hidden = true`) und zeigt den Kasten mit `role="alert"`; `fetch` ist in `try/catch`, kein unbehandelter Fehler. Nachbesserung A-0038 (vorher: „Meine Favoriten“ blieb mit „Favoriten werden geladen …“ stehen). Nicht im Browser geprüft (kein HTTP-Server / Browser verfügbar). |
+| F-02 | teilweise | `site/app.js`: `fehlerAnzeigen()` versteckt beide Abschnitte (`favoritenAbschnitt.hidden = true`, `alleLinksKopf.hidden = true`, `BereichsContainer.hidden = true`) und zeigt den Kasten mit `role="alert"`; `fetch` ist in `try/catch`, kein unbehandelter Fehler. Nachbesserung A-0038 und A-0077 (Alle-Links-Kopf ausblenden). Nicht im Browser geprüft. |
 | F-03 | erfüllt | `site/app.js`: nur `textContent` und `createElement`; kein `innerHTML`/`document.write`. `urlIstGueltig()` filtert Links ohne `http(s)://`. |
 | F-04 | erfüllt | `site/app.js`: `kuerzelFormen()` nimmt die ersten zwei Buchstaben, überspringt Ziffern/Satzzeichen, macht Großbuchstaben. |
 | F-10 | erfüllt | `site/index.html`: WMC-Logo (48 px, `alt="WAMOCON IT-Testmanagement"`), Trennstrich, WMA-Logo (45 px, `alt="WAMOCON Academy IT-Bildungszentrum"`); 4-px-Linie in `site/styles.css` (`.kopf`). |
 | F-11 | erfüllt | `site/app.js`: `begruesungText()` nach Uhrzeit; genau eine `h1` in `site/index.html`. |
 | F-20 | erfüllt | `site/index.html`: `<input type="search">` mit Platzhalter und zugeordnetem, visuell verstecktem `<label>`. |
-| F-21 | teilweise | `site/app.js`: `renderSuche()`/`linkPasst()` filtern bei jeder Eingabe, groß/klein egal, nicht passende Zeilen und Karten ohne Treffer `hidden`. Logik nachgeprüft; Nachbesserung A-0038. Nicht im Browser geprüft (kein Browser verfügbar). |
+| F-21 | teilweise | `site/app.js`: `renderSuche()`/`linkPasst()` filtern bei jeder Eingabe, groß/klein egal, nicht passende Zeilen und Karten ohne Treffer `hidden`. Nachbesserung A-0038 (Logik) und A-0077 (CSS: `[hidden]`-Regeln für `.linkzeile`, `.stern`, `.karten-raster`). Nicht im Browser geprüft. |
 | F-22 | teilweise | `site/app.js`: `renderSuche()` setzt die Infozeile; `trefferAnzahl()` zählt die Links aus `linksById` (eine Zahl je Link) — Nachbesserung A-0038 (vorher: doppelte Zählung über DOM-Elemente). Logik nachgeprüft; nicht im Browser geprüft. |
 | F-23 | erfüllt | `site/app.js`: `keinTreffer`-Block mit `hilfe.name`/`hilfe.url`. |
 | F-24 | erfüllt | `site/app.js`: `keydown`-Listener auf `Escape` leert die Suche. |
@@ -79,6 +79,15 @@ Beim Laden der Seite steht der Cursor im Suchfeld, damit man sofort tippen kann.
 | Was vorher | Was jetzt | Wie geprüft |
 |---|---|---|
 | Das Suchfeld hatte nach dem Laden keinen Fokus | `lade()` ruft am Ende `suchfeld.focus({ preventScroll: true })` auf, sobald die Daten geladen sind | Logik in `site/app.js` nachgeprüft; `node --check site/app.js` → keine Syntaxfehler; 30 Unit-Tests grün. Nicht im Browser geprüft (kein Browser verfügbar). |
+
+## Nachbesserung A-0077 (F-21 und F-02)
+
+Die Prüfung im Browser (Werkbank, 27.10.2026) hat zwei Fehler gefunden.
+
+| Fehler | Ursache | Was jetzt | Wie geprüft |
+|---|---|---|---|
+| F-21 | `renderSuche()` setzt `hidden` an den Linkzeilen, aber die CSS-Regel `.linkzeile { display: flex; }` hebt das Attribut wieder auf; dasselbe für `.stern` und `.karten-raster` | `[hidden] { display: none; }`-Regeln für `.linkzeile`, `.stern`, `.karten-raster` und `.abschnitts-kopf` ergänzt | `node --check site/app.js` → keine Syntaxfehler; 30 Unit-Tests grün; Logik in `site/styles.css` nachgeprüft. Nicht im Browser geprüft (kein Browser verfügbar) → teilweise. |
+| F-02 | Im Fehlerzustand blieb die Überschrift „Alle Links“ samt Infozeile über dem Fehlerkasten sichtbar | `fehlerAnzeigen()` setzt jetzt auch `alleLinksKopf.hidden = true`; die `.abschnitts-kopf[hidden]`-Regel in `site/styles.css` blendet sie aus | `node --check site/app.js` → keine Syntaxfehler; 30 Unit-Tests grün; Logik in `site/app.js` und `site/index.html` nachgeprüft. Nicht im Browser geprüft (kein Browser verfügbar) → teilweise. |
 
 ## Wie getestet
 
