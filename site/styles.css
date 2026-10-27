@@ -210,6 +210,10 @@ h1 {
   margin-bottom: 16px;
 }
 
+.abschnitts-kopf[hidden] {
+  display: none;
+}
+
 h2 {
   margin: 0;
   font-size: 12px;
@@ -371,6 +375,10 @@ h2 {
   gap: 24px;
 }
 
+.karten-raster[hidden] {
+  display: none;
+}
+
 .karte {
   border: 1px solid var(--linie);
   border-radius: var(--radius-mittel);
@@ -431,6 +439,10 @@ h3 {
   gap: 12px;
   padding: 12px 0;
   border-top: 1px solid var(--flaeche-grau);
+}
+
+.linkzeile[hidden] {
+  display: none;
 }
 
 .karte-academy .linkzeile {
@@ -497,6 +509,10 @@ h3 {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.stern[hidden] {
+  display: none;
 }
 
 .stern svg {
