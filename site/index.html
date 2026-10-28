@@ -21,7 +21,15 @@
     <div class="hauptteil-innen">
 
       <section class="begruesung">
+        <p id="datum" class="datum"></p>
         <h1 id="begruesung-text">Guten Tag</h1>
+        <form id="vorname-formular" class="vorname-formular" hidden>
+          <label for="vorname-feld">Wie dürfen wir Sie begrüßen?</label>
+          <input id="vorname-feld" name="vorname" type="text" placeholder="Vorname" maxlength="30" autocomplete="off" spellcheck="false">
+          <button type="submit" id="vorname-speichern" class="vorname-button">Speichern</button>
+          <button type="button" id="vorname-ohne-namen" class="vorname-button">Ohne Namen</button>
+        </form>
+        <p id="spruch" class="spruch" hidden></p>
         <div class="suche">
           <label class="visuell-versteckt" for="suchfeld">Anwendung oder Link suchen</label>
           <svg class="suche-lupe" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -66,7 +74,7 @@
 
   <footer class="fuss">
     <div class="fuss-innen">
-      <p class="fuss-text">Links gepflegt von der IT. Ihre Favoriten werden in diesem Browser gespeichert.</p>
+      <p class="fuss-text">Links gepflegt von der IT. Ihre Favoriten und Ihr Vorname werden in diesem Browser gespeichert. <button type="button" id="vorname-aendern" class="vorname-button">Vorname ändern</button></p>
       <p class="fuss-rechts">Link fehlt oder ist veraltet? <a id="fuss-hilfe" href="#">IT-Ticket erstellen</a></p>
     </div>
   </footer>

@@ -3,6 +3,8 @@
 // Alle Inhalte aus links.json werden als Text eingesetzt (F-03), nie als HTML.
 
 const SPEICHERSUELSSEL = "wmc-startseite.favoriten";
+const SPEICHERSUELSSEL_VORNAME = "wmc-startseite.vorname";
+const BASISDATUM = Date.UTC(2026, 0, 1); // 01.01.2026, t = 0 (F-13)
 
 const MARKE_ETIKETT = {
   wmc: "WMC",
@@ -12,6 +14,13 @@ const MARKE_ETIKETT = {
 
 // ---- Referenzen ----------------------------------------------------------
 const begruesung = document.getElementById("begruesung-text");
+const datum = document.getElementById("datum");
+const spruch = document.getElementById("spruch");
+const vornameFormular = document.getElementById("vorname-formular");
+const vornameFeld = document.getElementById("vorname-feld");
+const vornameSpeichern = document.getElementById("vorname-speichern");
+const vornameOhneNamen = document.getElementById("vorname-ohne-namen");
+const vornameAendern = document.getElementById("vorname-aendern");
 const suchfeld = document.getElementById("suchfeld");
 const favoritenAbschnitt = document.getElementById("favoriten");
 const alleLinksKopf = document.getElementById("alle-links-kopf");
@@ -72,6 +81,120 @@ function begruessungText() {
   if (stunde >= 5 && stunde <= 10) return "Guten Morgen";
   if (stunde >= 11 && stunde <= 17) return "Guten Tag";
   return "Guten Abend";
+}
+
+// ---- Vorname (F-14) ------------------------------------------------------
+let vorname = "";
+let vornameSpeicherFehler = false;
+
+function vornameLesen() {
+  if (vornameSpeicherFehler) return null;
+  try {
+    const roh = window.localStorage.getItem(SPEICHERSUELSSEL_VORNAME);
+    return roh === null ? null : roh;
+  } catch (fehler) {
+    vornameSpeicherFehler = true;
+    return null;
+  }
+}
+
+function vornameSchreiben(text) {
+  vorname = text;
+  begruessungAktualisieren();
+  if (vornameSpeicherFehler) return;
+  try {
+    window.localStorage.setItem(SPEICHERSUELSSEL_VORNAME, text);
+  } catch (fehler) {
+    // Gesperrtes oder voll gesetztes localStorage: der Name gilt bis zum
+    // Neuladen (F-14). Beim nächsten Schreiben wird nicht erneut probiert.
+    vornameSpeicherFehler = true;
+  }
+}
+
+function begruessungAktualisieren() {
+  // F-11: Begrüßung plus optionaler Vorname, als Text (F-03).
+  if (vorname) {
+    begruesung.textContent = `${begruessungText()}, ${vorname}`;
+  } else {
+    begruesung.textContent = begruessungText();
+  }
+}
+
+function vornameFormularZeigen(fokus) {
+  vornameFormular.hidden = false;
+  vornameFeld.value = vorname;
+  if (fokus) {
+    vornameFeld.focus({ preventScroll: true });
+  }
+}
+
+function vornameFormularInitialisieren() {
+  const gespeichert = vornameLesen();
+  if (gespeichert === null) {
+    // Fehlt der Schlüssel: Formular zeigen, ohne es zu beantworten (F-14).
+    vornameFormularZeigen(false);
+  } else {
+    vorname = gespeichert;
+    vornameFormular.hidden = true;
+  }
+  begruessungAktualisieren();
+}
+
+// ---- Datum (F-12) --------------------------------------------------------
+function datumHeute() {
+  return Intl.DateTimeFormat("de-DE", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+}
+
+// ---- Spruch des Tages (F-13) ---------------------------------------------
+function tageZahl(datumObjekt) {
+  // t: Kalendertage vom 01.01.2026, aus Kalenderdaten gerechnet (F-13),
+  // damit die Zeitumstellung den Satz nicht verschiebt.
+  const ziel = Date.UTC(datumObjekt.getFullYear(), datumObjekt.getMonth(), datumObjekt.getDate());
+  return Math.round((ziel - BASISDATUM) / 86400000);
+}
+
+function spruchStelle(anzahl, heute) {
+  if (anzahl <= 0) return null;
+  const t = tageZahl(heute);
+  return ((t % anzahl) + anzahl) % anzahl;
+}
+
+function spruchLaden() {
+  return fetch("daten/sprueche.json", { cache: "no-store" })
+    .then((antwort) => {
+      if (!antwort.ok) throw new Error("HTTP " + antwort.status);
+      return antwort.json();
+    })
+    .then((inhalt) => {
+      const satz = spruchWahlen(inhalt);
+      if (satz !== null) {
+        spruch.textContent = satz; // als Text (F-03)
+        spruch.hidden = false;
+      } else {
+        // Kein einwandfreier Satz: Absatz bleibt verborgen (F-13).
+        spruch.hidden = true;
+      }
+    })
+    .catch(() => {
+      // Datei fehlt oder ist ungültig: Absatz bleibt verborgen,
+      // keine Fehlermeldung, kein unbehandelter Konsole-Fehler (F-13).
+      spruch.hidden = true;
+    });
+}
+
+function spruchWahlen(inhalt) {
+  if (!inhalt || !Array.isArray(inhalt.sprueche)) return null;
+  const satze = inhalt.sprueche;
+  const stelle = spruchStelle(satze.length, new Date());
+  if (stelle === null) return null;
+  const satz = satze[stelle];
+  if (typeof satz !== "string" || satz.length === 0) return null;
+  return satz;
 }
 
 // ---- Kürzel (F-04) -------------------------------------------------------
@@ -405,6 +528,7 @@ function fehlerAnzeigen() {
   BereichsContainer.hidden = true;
   infozeile.textContent = "";
   keinTreffer.hidden = true;
+  suchfeld.disabled = true; // Eingaben ins Suchfeld bewirken nichts (F-02)
   fehlerKasten.hidden = false;
 }
 
@@ -420,7 +544,30 @@ function hilfeAnwenden() {
 }
 
 function start() {
-  begruesung.textContent = begruessungText();
+  begruessungAktualisieren();
+  datum.textContent = datumHeute();
+  spruchLaden(); // eigenes Loading; schlägt fehl, bleibt der Absatz verborgen
+  vornameFormularInitialisieren();
+  vornameSpeichern.addEventListener("click", () => {
+    const text = (vornameFeld.value || "").trim();
+    vornameSchreiben(text); // leerer Text gilt wie „Ohne Namen“ (F-14)
+    vornameFormular.hidden = true;
+  });
+  vornameOhneNamen.addEventListener("click", () => {
+    vornameSchreiben("");
+    vornameFormular.hidden = true;
+  });
+  vornameFeld.addEventListener("keydown", (ereignis) => {
+    if (ereignis.key === "Enter") {
+      ereignis.preventDefault();
+      const text = (vornameFeld.value || "").trim();
+      vornameSchreiben(text);
+      vornameFormular.hidden = true;
+    }
+  });
+  vornameAendern.addEventListener("click", () => {
+    vornameFormularZeigen(true);
+  });
   bearbeitenButton.addEventListener("click", () => {
     bearbeitenModus = !bearbeitenModus;
     bearbeitenButton.textContent = bearbeitenModus ? "Fertig" : "Bearbeiten";
