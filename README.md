@@ -42,7 +42,7 @@ Die Seite ist dann unter `http://localhost:8080/` erreichbar. Der Container füh
 
 Die IT pflegt die Links in einer JSON-Datei auf dem Server (Format: `schema/links.schema.json`). Nach einer Änderung:
 
-1. Die Datei prüfen: `python3 scripts/pruefe_links.py PFAED/ZUR/links.json`
+1. Die Datei prüfen: `python3 scripts/pruefe_links.py PFAD/ZUR/links.json`
 2. Gilt das Dateiverzeichnis als `LINKS_VERZEICHNIS` eingebunden, ist die Änderung beim nächsten Öffnen in allen Browsern sichtbar — kein Neustart des Containers nötig.
 
 Beim Betrieb mit Docker setzt die IT `LINKS_VERZEICHNIS` auf das Verzeichnis mit der echten Liste (außerhalb des Repos):
@@ -57,7 +57,7 @@ Das Verzeichnis wird schreibgeschützt nach `/usr/share/nginx/html/daten` eingeb
 
 Die Sprüche des Tages liegen in `sprueche.json` im selben Verzeichnis wie `links.json` (Format: `stand` und `sprueche`, ein Satz pro Eintrag, höchstens 90 Zeichen). Die Seite zeigt jeden Tag einen anderen Satz; der Tag zählt ab dem 01.01.2026. Nach einer Änderung:
 
-1. Die Datei prüfen: `python3 scripts/pruefe_sprueche.py PFAED/ZUR/sprueche.json` — die Ausgabe ist `OK: N Sprüche`.
+1. Die Datei prüfen: `python3 scripts/pruefe_sprueche.py PFAD/ZUR/sprueche.json` — die Ausgabe ist `OK: N Sprüche`.
 2. Gilt das Dateiverzeichnis als `LINKS_VERZEICHNIS` eingebunden, ist die Änderung beim nächsten Öffnen in allen Browsern sichtbar — kein Neustart des Containers nötig.
 
 Fehlt die Datei oder ist sie ungültig, bleibt der Spruch-Absatz verborgen; die Links erscheinen trotzdem.
