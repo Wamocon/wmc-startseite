@@ -199,6 +199,12 @@ h1 {
   gap: 12px;
 }
 
+/* display: flex hebt das Attribut hidden auf — ohne diese Regel
+   bliebe das Formular nach „Speichern“ sichtbar (A-0102, F-14). */
+.vorname-formular[hidden] {
+  display: none;
+}
+
 .vorname-formular label {
   font-size: 14px;
   line-height: 21px;
