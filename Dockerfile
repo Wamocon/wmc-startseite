@@ -1,8 +1,8 @@
 # Browser-Startseite WMC & WMA (WMCNL-2781)
 #
 # Mehrstufiger Build:
-#   1) Python-Image führt das Prüfskript auf der Beispieldatei aus und bricht
-#      ab, wenn die Prüfung fehlschlägt (B-01).
+#   1) Python-Image führt die Prüfskripte auf den Beispieldateien aus und
+#      bricht ab, wenn eine Prüfung fehlschlägt (B-01).
 #   2) nginx-Image in fester Version (kein latest) kopiert site/ und die
 #      nginx-Konfiguration (B-01).
 
@@ -10,10 +10,13 @@
 FROM python:3.12-slim AS pruefung
 WORKDIR /app
 COPY scripts/pruefe_links.py ./scripts/pruefe_links.py
+COPY scripts/pruefe_sprueche.py ./scripts/pruefe_sprueche.py
 COPY daten/beispiel/ ./daten/beispiel/
 # Bricht ab, wenn das Prüfskript fehlschlägt (B-01).
 # Erst dann entsteht die Datei, die Stufe 2 als Nachweis kopiert (B-01).
-RUN python3 scripts/pruefe_links.py daten/beispiel/links.json && touch /app/pruefung-erledigt
+RUN python3 scripts/pruefe_links.py daten/beispiel/links.json && \
+    python3 scripts/pruefe_sprueche.py daten/beispiel/sprueche.json && \
+    touch /app/pruefung-erledigt
 
 # ---- Stufe 2: nginx ---------------------------------------------------------
 FROM nginx:1.27.3-alpine AS produktiv
