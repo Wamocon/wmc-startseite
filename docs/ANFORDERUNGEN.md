@@ -1,6 +1,8 @@
 # Anforderungen: Browser-Startseite WMC & WMA
 
-Stand 21.10.2026 · Jira WMCNL-2781 · Gestaltung: [DESIGN.md](DESIGN.md)
+Stand 28.10.2026 · Jira WMCNL-2781 · Gestaltung: [DESIGN.md](DESIGN.md)
+
+Am 28.10.2026 neu oder geändert (Erwin, Auftrag A-0100): F-02, F-11, F-12, F-13, F-14, F-50, V-11 bis V-15, T-01, B-01, B-03, B-04. Wo eine dieser Anforderungen Gestaltung nennt, gilt sie zusätzlich zu DESIGN.md.
 
 Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den Stand. Texte in „Anführungszeichen“ sind wörtlich so zu übernehmen.
 
@@ -8,7 +10,7 @@ Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den 
 
 **F-01 Linkliste laden.** Die Seite lädt beim Start `daten/links.json` (relativer Pfad, gleicher Server). Bereiche und Links erscheinen in der Reihenfolge der Datei. Das Format ist in `schema/links.schema.json` festgelegt; die Beispieldatei liegt unter `daten/beispiel/links.json`.
 
-**F-02 Fehlerzustand.** Lässt sich `daten/links.json` nicht laden (HTTP-Fehler, Netzfehler) oder ist sie kein gültiges JSON, zeigt die Seite statt der Abschnitte „Meine Favoriten“ und „Alle Links“ ein Element mit `role="alert"` und dem Text „Die Linkliste konnte nicht geladen werden. Bitte wenden Sie sich an die IT.“ In der Browserkonsole darf dabei kein unbehandelter Fehler auftreten.
+**F-02 Fehlerzustand.** Lässt sich `daten/links.json` nicht laden (HTTP-Fehler, Netzfehler) oder ist sie kein gültiges JSON, zeigt die Seite statt der Abschnitte „Meine Favoriten“ und „Alle Links“ ein Element mit `role="alert"` und dem Text „Die Linkliste konnte nicht geladen werden. Bitte wenden Sie sich an die IT.“ In der Browserkonsole darf dabei kein unbehandelter Fehler auftreten. Im Fehlerzustand bewirkt eine Eingabe ins Suchfeld nichts: „Kein Treffer“ erscheint nicht, unter der Suche steht weiter nur der Fehlerkasten.
 
 **F-03 Sichere Ausgabe.** Alle Texte aus `links.json` werden als Text eingesetzt (`textContent`, `createElement`), nie als HTML. `innerHTML`, `outerHTML`, `insertAdjacentHTML` und `document.write` werden für Inhalte aus der Datei nicht verwendet. Ein Link, dessen `url` nicht mit `https://` oder `http://` beginnt, wird nicht angezeigt.
 
@@ -18,7 +20,13 @@ Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den 
 
 **F-10 Kopf.** Links das WMC-Logo (`assets/logo-wmc.png`, `alt="WAMOCON IT-Testmanagement"`, Höhe 48 px), ein senkrechter Trennstrich, dann das WMA-Logo (`assets/logo-wma.png`, `alt="WAMOCON Academy IT-Bildungszentrum"`, Höhe 45 px). Unter dem Kopf eine 4 px breite rote Linie. Kein Name, keine Anmeldung, keine weiteren Elemente im Kopf.
 
-**F-11 Begrüßung.** Eine `h1` über dem Suchfeld, abhängig von der Uhrzeit des Browsers beim Laden: 05:00–10:59 „Guten Morgen“, 11:00–17:59 „Guten Tag“, sonst „Guten Abend“. Es gibt genau eine `h1` auf der Seite.
+**F-11 Begrüßung.** Eine `h1` über dem Suchfeld, abhängig von der Uhrzeit des Browsers beim Laden: 05:00–10:59 „Guten Morgen“, 11:00–17:59 „Guten Tag“, sonst „Guten Abend“. Ist ein Vorname gespeichert (F-14), folgen ein Komma, ein Leerzeichen und der Vorname, z. B. „Guten Morgen, Erwin“. Es gibt genau eine `h1` auf der Seite.
+
+**F-12 Datum.** Über der `h1` ein Absatz mit dem heutigen Datum nach der Uhr des Browsers, Wochentag und Monat ausgeschrieben, z. B. „Mittwoch, 28. Oktober 2026“, so wie `Intl.DateTimeFormat("de-DE", { weekday: "long", day: "numeric", month: "long", year: "numeric" })` es liefert. Gestaltung: 14 / 21 px, 400, `#5F3E3E`, zentriert, 8 px Abstand zur `h1`.
+
+**F-13 Spruch des Tages.** Unter der `h1` ein Absatz mit einem Satz aus `daten/sprueche.json`. Format: `{"stand": "JJJJ-MM-TT", "sprueche": ["…", "…"]}`. Angezeigt wird der Satz an der Stelle t mod n, gezählt ab 0. n ist die Zahl der Sätze, t die Zahl der Kalendertage vom 01.01.2026 bis zum heutigen Datum des Browsers; am 01.01.2026 ist t = 0, davor ist t negativ und die Stelle ((t mod n) + n) mod n. Rechne t aus den Kalenderdaten, nicht aus der Ortszeit in Millisekunden, damit die Zeitumstellung den Satz nicht verschiebt. Die Seite lädt die Datei getrennt von `links.json`. Lässt sie sich nicht laden, ist sie kein gültiges JSON oder enthält sie keinen Satz, bleibt der Absatz verborgen; die Links erscheinen trotzdem, es gibt keinen Fehlerkasten und in der Konsole keinen unbehandelten Fehler. Der Satz wird als Text eingesetzt wie in F-03. Gestaltung: 16 / 24 px, 400, `#5F3E3E`, zentriert, 8 px Abstand zur `h1`; die 20 px bis zum Suchfeld bleiben.
+
+**F-14 Vorname.** Fehlt im `localStorage` der Schlüssel `wmc-startseite.vorname`, steht zwischen `h1` und Spruch ein Formular mit dem sichtbaren Label „Wie dürfen wir Sie begrüßen?“, einem Textfeld mit dem Platzhalter „Vorname“ für höchstens 30 Zeichen und den Buttons „Speichern“ und „Ohne Namen“. „Speichern“ oder die Eingabetaste im Feld speichert den Text ohne Leerzeichen am Rand unter `wmc-startseite.vorname`, blendet das Formular aus und zeigt den Namen sofort in der `h1`; ein leerer Text gilt wie „Ohne Namen“. „Ohne Namen“ speichert eine leere Zeichenkette; die `h1` bleibt ohne Namen, und das Formular erscheint nicht wieder. Das Formular lädt die Seite nicht neu und schickt nichts ab. Der Vorname wird als Text eingesetzt wie in F-03. Wirft `localStorage` eine Ausnahme, gilt der Name bis zum Neuladen. Gestaltung: Label 14 / 21 px `#5F3E3E`, Textfeld 44 px hoch mit Rahmen 1 px `#956D6D` und Radius 8 px, Buttons wie „Bearbeiten“ in DESIGN.md; alles in einer Zeile, zentriert, unter 600 px umbrechend.
 
 ## 3 Suche
 
@@ -61,7 +69,7 @@ Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den 
 
 ## 6 Fuß
 
-**F-50 Fußzeile.** Links „Links gepflegt von der IT. Ihre Favoriten werden in diesem Browser gespeichert.“ Rechts „Link fehlt oder ist veraltet?“ und dahinter ein Link mit `hilfe.name` auf `hilfe.url`.
+**F-50 Fußzeile.** Links „Links gepflegt von der IT. Ihre Favoriten und Ihr Vorname werden in diesem Browser gespeichert.“ und dahinter ein Button „Vorname ändern“. Er zeigt das Formular aus F-14 mit dem gespeicherten Vornamen im Feld und setzt den Fokus hinein. Rechts „Link fehlt oder ist veraltet?“ und dahinter ein Link mit `hilfe.name` auf `hilfe.url`.
 
 ## 7 Qualität
 
@@ -94,9 +102,17 @@ Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den 
 - **V-09** Ausgabe: Ohne Fehler genau eine Zeile „OK: B Bereiche, L Links“ und Exit-Code 0. Mit Fehlern je Fehler eine Zeile „FEHLER: FUNDSTELLE: MELDUNG“ und Exit-Code 1. Die Fundstelle hat die Form `bereiche[2].links[0].url` (Zählung ab 0) bzw. `stand`, `hilfe.url`, `standardFavoriten[1]`. Fehlender Dateiname: Hinweis zum Aufruf und Exit-Code 2.
 - **V-10** Fehlermeldungen auf Deutsch und so, dass die IT den Fehler ohne Hilfe findet.
 
+**Prüfskript für die Sprüche.** `scripts/pruefe_sprueche.py`, Aufruf `python3 scripts/pruefe_sprueche.py DATEI`, nur Python-Standardbibliothek, sammelt alle Fehler und bricht nicht beim ersten ab.
+
+- **V-11** Die Datei ist lesbares UTF-8 und gültiges JSON, ein Objekt mit genau den Feldern `stand` und `sprueche`.
+- **V-12** `stand` ist ein echtes Kalenderdatum JJJJ-MM-TT.
+- **V-13** `sprueche` ist eine Liste mit mindestens einem Eintrag; jeder ist eine Zeichenkette mit 1 bis 90 Zeichen ohne Leerzeichen am Anfang und Ende.
+- **V-14** Kein Satz kommt zweimal vor.
+- **V-15** Ausgabe wie V-09: ohne Fehler genau eine Zeile „OK: N Sprüche“ und Exit-Code 0; mit Fehlern je Fehler eine Zeile „FEHLER: FUNDSTELLE: MELDUNG“ mit Fundstellen wie `stand` oder `sprueche[3]` und Exit-Code 1; ohne Dateinamen ein Hinweis zum Aufruf und Exit-Code 2. Meldungen auf Deutsch.
+
 ## 9 Betrieb
 
-**B-01 Container.** `Dockerfile` auf Basis eines offiziellen nginx-Images in fester Version (kein `latest`). Es kopiert `site/` nach `/usr/share/nginx/html/` und die nginx-Konfiguration aus `nginx/`. Der Build führt `pruefe_links.py` auf `daten/beispiel/links.json` aus und bricht ab, wenn die Prüfung fehlschlägt (z. B. mehrstufiger Build mit einem Python-Image).
+**B-01 Container.** `Dockerfile` auf Basis eines offiziellen nginx-Images in fester Version (kein `latest`). Es kopiert `site/` nach `/usr/share/nginx/html/` und die nginx-Konfiguration aus `nginx/`. Der Build führt `pruefe_links.py` auf `daten/beispiel/links.json` aus und bricht ab, wenn die Prüfung fehlschlägt (z. B. mehrstufiger Build mit einem Python-Image). Der Build prüft auch `daten/beispiel/sprueche.json` mit `pruefe_sprueche.py` und bricht ab, wenn die Prüfung fehlschlägt.
 
 **B-02 Compose.** `docker-compose.yml` mit dem Dienst `startseite`:
 - Seite erreichbar unter `http://localhost:8080/`.
@@ -109,14 +125,15 @@ Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den 
 - `X-Content-Type-Options: nosniff`
 - `Referrer-Policy: no-referrer`
 - `Cache-Control: no-cache` für `/`, `/index.html`, `/app.js`, `/styles.css` und `/daten/links.json`, damit Änderungen beim nächsten Öffnen ankommen.
+- `Cache-Control: no-cache` auch für `/daten/sprueche.json`, dort mit denselben drei Sicherheitskopfzeilen wie bei `/daten/links.json`.
 - Schriften und Logos unter `/assets/` dürfen bis zu 7 Tage gecacht werden.
 - `server_tokens off;` und kein Verzeichnislisting.
 
-**B-04 README.** `README.md` erklärt kurz: lokal starten, mit Docker betreiben, Links pflegen (Datei ändern → Prüfskript → fertig, kein Neustart nötig) und die Tests ausführen.
+**B-04 README.** `README.md` erklärt kurz: lokal starten, mit Docker betreiben, Links pflegen (Datei ändern → Prüfskript → fertig, kein Neustart nötig) und die Tests ausführen. Die README erklärt auch, wie man die Sprüche pflegt.
 
 ## 10 Tests
 
-**T-01** Unit-Tests für `pruefe_links.py` in `tests/`, ausführbar mit `python3 -m unittest discover -s tests`, alle grün. Mindestens ein Test je Regel V-02 bis V-09.
+**T-01** Unit-Tests für `pruefe_links.py` in `tests/`, ausführbar mit `python3 -m unittest discover -s tests`, alle grün. Mindestens ein Test je Regel V-02 bis V-09. Unit-Tests auch für `pruefe_sprueche.py`, mindestens einer je Regel V-11 bis V-15.
 
 **T-02** Kurzer Nachweis in `docs/UEBERGABE.md`, dass die Seite im Browser funktioniert (welche Schritte du geprüft hast, mit welchem Ergebnis). Browser-Tests sind erlaubt, aber keine Pflicht.
 
