@@ -18,7 +18,6 @@ const datum = document.getElementById("datum");
 const spruch = document.getElementById("spruch");
 const vornameFormular = document.getElementById("vorname-formular");
 const vornameFeld = document.getElementById("vorname-feld");
-const vornameSpeichern = document.getElementById("vorname-speichern");
 const vornameOhneNamen = document.getElementById("vorname-ohne-namen");
 const vornameAendern = document.getElementById("vorname-aendern");
 const suchfeld = document.getElementById("suchfeld");
@@ -548,7 +547,11 @@ function start() {
   datum.textContent = datumHeute();
   spruchLaden(); // eigenes Loading; schlägt fehl, bleibt der Absatz verborgen
   vornameFormularInitialisieren();
-  vornameSpeichern.addEventListener("click", () => {
+  // F-14: Speichern und die Eingabetaste laufen über dasselbe Ereignis
+  // submit; preventDefault() hält den Browser davon ab, die Seite neu zu
+  // laden oder die Eingabe abzuschicken („form-action 'none'“).
+  vornameFormular.addEventListener("submit", (ereignis) => {
+    ereignis.preventDefault();
     const text = (vornameFeld.value || "").trim();
     vornameSchreiben(text); // leerer Text gilt wie „Ohne Namen“ (F-14)
     vornameFormular.hidden = true;
@@ -556,14 +559,6 @@ function start() {
   vornameOhneNamen.addEventListener("click", () => {
     vornameSchreiben("");
     vornameFormular.hidden = true;
-  });
-  vornameFeld.addEventListener("keydown", (ereignis) => {
-    if (ereignis.key === "Enter") {
-      ereignis.preventDefault();
-      const text = (vornameFeld.value || "").trim();
-      vornameSchreiben(text);
-      vornameFormular.hidden = true;
-    }
   });
   vornameAendern.addEventListener("click", () => {
     vornameFormularZeigen(true);
