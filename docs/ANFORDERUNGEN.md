@@ -4,6 +4,8 @@ Stand 28.10.2026 · Jira WMCNL-2781 · Gestaltung: [DESIGN.md](DESIGN.md)
 
 Am 28.10.2026 neu oder geändert (Erwin, Auftrag A-0100): F-02, F-11, F-12, F-13, F-14, F-50, V-11 bis V-15, T-01, B-01, B-03, B-04. Wo eine dieser Anforderungen Gestaltung nennt, gilt sie zusätzlich zu DESIGN.md.
 
+Am 29.10.2026 klarer gefasst (Erwin, Entscheidung vom 22.10.): F-04, Ziffern zählen im Kürzel mit, wie die Seite es seit dem 22.10. macht.
+
 Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den Stand. Texte in „Anführungszeichen“ sind wörtlich so zu übernehmen.
 
 ## 1 Daten
@@ -14,7 +16,7 @@ Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den 
 
 **F-03 Sichere Ausgabe.** Alle Texte aus `links.json` werden als Text eingesetzt (`textContent`, `createElement`), nie als HTML. `innerHTML`, `outerHTML`, `insertAdjacentHTML` und `document.write` werden für Inhalte aus der Datei nicht verwendet. Ein Link, dessen `url` nicht mit `https://` oder `http://` beginnt, wird nicht angezeigt.
 
-**F-04 Kürzel.** Jeder Link hat ein Kürzelfeld (siehe DESIGN.md). Inhalt ist `kuerzel` aus der Datei. Fehlt das Feld, gelten die ersten zwei Buchstaben des Namens in Großbuchstaben (Beispiel: „SharePoint“ → „SH“, „wamocon.com“ → „WA“). Ziffern und Satzzeichen werden dabei übersprungen.
+**F-04 Kürzel.** Jeder Link hat ein Kürzelfeld (siehe DESIGN.md). Inhalt ist `kuerzel` aus der Datei. Fehlt das Feld, gelten die ersten zwei Buchstaben oder Ziffern des Namens in Großbuchstaben (Beispiel: „SharePoint“ → „SH“, „wamocon.com“ → „WA“, „123Test“ → „12“). Satzzeichen und Leerzeichen werden dabei übersprungen.
 
 ## 2 Kopf und Begrüßung
 
