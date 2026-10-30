@@ -33,7 +33,7 @@ services:
     container_name: wmc-startseite-admin
     working_dir: /srv/startseite
     command: python3 admin/dienst.py --adresse 0.0.0.0 --port 8081
-      --daten /srv/startseite/daten/links.json
+      --daten /srv/startseite/daten
       --sicherungen /srv/startseite/sicherungen
       --protokoll /srv/startseite/protokoll.jsonl
       --passwort /srv/startseite/passwort.json
