@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Links pflegen · Startseite</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="admin">
+  <noscript>
+    <div class="ohne-js" role="alert">
+      Diese Ansicht braucht JavaScript.
+    </div>
+  </noscript>
+
+  <header class="kopf admin-kopf">
+    <div class="kopf-inhalt">
+      <a class="marke" href="/" aria-label="Zurück zur Startseite">W</a>
+      <div class="kopf-titel">
+        <h1>Links pflegen</h1>
+        <span class="status" id="status" aria-live="polite"></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="inhalt admin-inhalt">
+    <section id="anmeldung" class="anmeldung" aria-labelledby="anmeldung-titel">
+      <h2 id="anmeldung-titel">Anmelden</h2>
+      <form id="anmeldeformular" novalidate>
+        <label for="passwort">Passwort</label>
+        <input id="passwort" name="passwort" type="password"
+               autocomplete="current-password" required>
+        <div class="meldung" id="anmeldung-meldung" role="alert"></div>
+        <div class="handlung">
+          <button type="submit" class="btn primär">Anmelden</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="uebersicht" class="uebersicht" hidden>
+      <div class="zeile ober">
+        <div class="meldung" id="speichern-meldung" role="alert" aria-live="polite"></div>
+        <div class="handlung">
+          <label for="name">Ihr Name</label>
+          <input id="name" name="name" type="text" maxlength="40" required>
+          <button id="speichern" type="button" class="btn primär">Speichern</button>
+          <button id="abmelden" type="button" class="btn">Abmelden</button>
+        </div>
+      </div>
+
+      <div id="bereiche" class="bereiche"></div>
+
+      <section class="abschnitt favoriten" aria-labelledby="favoriten-titel">
+        <h2 id="favoriten-titel">Standardfavoriten</h2>
+        <p class="hinweis">Höchstens fünf, in der Reihenfolge der Startseite.</p>
+        <div id="favoriten" class="favoriten-liste"></div>
+      </section>
+
+      <section class="abschnitt hilfe" aria-labelledby="hilfe-titel">
+        <h2 id="hilfe-titel">Hilfe-Link „Link fehlt?“</h2>
+        <form id="hilfeformular" novalidate>
+          <div class="feld">
+            <label for="hilfe-name">Name</label>
+            <input id="hilfe-name" name="hilfe-name" type="text"
+                   value="Link fehlt?" maxlength="120">
+            <div class="meldung" id="hilfe-name-meldung" role="alert"></div>
+          </div>
+          <div class="feld">
+            <label for="hilfe-adresse">Adresse</label>
+            <input id="hilfe-adresse" name="hilfe-adresse" type="text"
+                   value="https://github.com/Wamocon/wmc-startseite/issues" maxlength="500">
+            <div class="meldung" id="hilfe-adresse-meldung" role="alert"></div>
+          </div>
+        </form>
+      </section>
+
+      <section class="abschnitt protokoll" aria-labelledby="protokoll-titel">
+        <h2 id="protokoll-titel">Protokoll</h2>
+        <p class="hinweis">Die letzten 20 Einträge.</p>
+        <table class="tabelle">
+          <thead>
+            <tr>
+              <th scope="col">Zeit</th>
+              <th scope="col">Name</th>
+              <th scope="col">Neu</th>
+              <th scope="col">Geändert</th>
+              <th scope="col">Gelöscht</th>
+              <th scope="col">Sicherung</th>
+            </tr>
+          </thead>
+          <tbody id="protokoll-zeilen"></tbody>
+        </table>
+      </section>
+
+      <section class="abschnitt sicherungen" aria-labelledby="sicherungen-titel">
+        <h2 id="sicherungen-titel">Sicherungen</h2>
+        <p class="hinweis">Die letzten 20 Sicherungen. „Diesen Stand zurückholen“ legt vorher
+          eine Sicherung des aktuellen Stands an.</p>
+        <div id="sicherungen" class="sicherungen-liste"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer class="fuss">
+    <div class="fuss-inhalt">
+      <span class="fuss-text">Wamocon – interne Startseite</span>
+      <a class="fuss-hilfe" href="/admin" aria-label="Links pflegen">Links pflegen</a>
+    </div>
+  </footer>
+
+  <script src="/admin/admin.js" type="module"></script>
+</body>
+</html>

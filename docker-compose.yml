@@ -15,9 +15,41 @@ services:
       # Einzeldatei dann im Container veraltet wäre.
       - ${LINKS_VERZEICHNIS:-./daten/beispiel}:/usr/share/nginx/html/daten:ro
     restart: unless-stopped
+    depends_on:
+      - admin
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
       interval: 30s
       timeout: 5s
       start_period: 5s
       retries: 3
+
+  # B-05, A-0104: eigener Dienst zum Speichern der Linkliste (L-02 bis L-15).
+  # python:3.12-slim, nur Standardbibliothek (L-02, B-05). Bindet daten/
+  # schreibend ein, dazu sicherungen/, protokoll.jsonl und die Passwortdatei.
+  # nginx liest daten/ weiter nur (B-02) – der Schreibzugriff liegt nur hier.
+  admin:
+    image: python:3.12-slim
+    container_name: wmc-startseite-admin
+    working_dir: /srv/startseite
+    command: python3 admin/dienst.py --adresse 0.0.0.0 --port 8081
+      --daten /srv/startseite/daten/links.json
+      --sicherungen /srv/startseite/sicherungen
+      --protokoll /srv/startseite/protokoll.jsonl
+      --passwort /srv/startseite/passwort.json
+      --sperre 600
+    volumes:
+      - ./admin:/srv/startseite/admin:ro
+      - ./scripts:/srv/startseite/scripts:ro
+      - ${LINKS_VERZEICHNIS:-./daten/beispiel}:/srv/startseite/daten
+      - admin_sicherungen:/srv/startseite/sicherungen
+      - admin_protokoll:/srv/startseite/protokoll
+      - admin_passwort:/srv/startseite/passwort
+    expose:
+      - "8081"
+    restart: unless-stopped
+
+volumes:
+  admin_sicherungen:
+  admin_protokoll:
+  admin_passwort:

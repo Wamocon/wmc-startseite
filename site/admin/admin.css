@@ -1,0 +1,594 @@
+/* Admin-Ansicht (L-14): baut auf site/styles.css auf, fügt eigene Regeln hinzu.
+   Farben und Schriften bleiben identisch (CI). */
+
+:root {
+  --admin-gruen: var(--akzent);
+}
+
+.admin {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-kopf {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--oberflaeche);
+  border-bottom: 1px solid var(--rand);
+}
+
+.admin-kopf .kopf-inhalt {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 24px;
+}
+
+.admin-kopf .marke {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--marke-hintergrund, var(--akzent-weich));
+  color: var(--marke-text, var(--akzent));
+  font-weight: 700;
+  text-decoration: none;
+  font-size: 18px;
+}
+
+.admin-kopf .kopf-titel {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-kopf h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.admin-kopf .status {
+  font-size: 13px;
+  color: var(--text-schwach);
+}
+
+.admin-inhalt {
+  flex: 1;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ---- Anmeldung ---------------------------------------------------------- */
+
+.anmeldung {
+  max-width: 360px;
+  width: 100%;
+  margin: 48px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid var(--rand);
+  border-radius: 12px;
+}
+
+.anmeldung h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.anmeldung form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.anmeldung label {
+  font-size: 13px;
+  color: var(--text-schwach);
+}
+
+.anmeldung input[type="password"] {
+  padding: 10px 12px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: var(--feld-hintergrund, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.anmeldung input[type="password"]:focus-visible {
+  outline: 2px solid var(--akzent);
+  outline-offset: 2px;
+  border-color: var(--akzent);
+}
+
+.anmeldung .handlung {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* ---- Buttons ------------------------------------------------------------- */
+
+.btn {
+  padding: 8px 14px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.btn:hover {
+  background: var(--akzent-weich);
+  border-color: var(--akzent);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--akzent);
+  outline-offset: 2px;
+}
+
+.btn.primär {
+  background: var(--akzent);
+  color: #fff;
+  border-color: var(--akzent);
+}
+
+.btn.primär:hover {
+  background: var(--akzent-aktiv);
+}
+
+.btn.klein {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ---- Zeilen und Meldungen ------------------------------------------------- */
+
+.zeile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.zeile.ober {
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--rand);
+}
+
+.zeile.ober .handlung {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.zeile.ober label {
+  font-size: 13px;
+  color: var(--text-schwach);
+}
+
+.zeile.ober input {
+  padding: 6px 10px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: var(--feld-hintergrund, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  min-width: 160px;
+}
+
+.meldung {
+  font-size: 13px;
+  color: var(--text-schwach);
+  min-height: 1em;
+}
+
+.meldung.fehler {
+  color: #c0392b;
+}
+
+.meldung.ok {
+  color: var(--akzent);
+}
+
+/* ---- Bereiche ------------------------------------------------------------ */
+
+.bereiche {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.bereich {
+  border: 1px solid var(--rand);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bereich-kopf {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bereich-kopf .marke {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--marke-hintergrund, var(--akzent-weich));
+  color: var(--marke-text, var(--akzent));
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.bereich-kopf h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+}
+
+.bereich-kopf .handlung {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.bereich .links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* ---- Linkzeile ------------------------------------------------------------ */
+
+.link-zeile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+}
+
+.link-zeile .info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.link-zeile .info .zeile-oben {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.link-zeile .info .kuerzel {
+  font-size: 12px;
+  color: var(--text-schwach);
+  font-family: var(--mono, monospace);
+}
+
+.link-zeile .info .name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.link-zeile .info .adresse {
+  font-size: 12px;
+  color: var(--text-schwach);
+  word-break: break-all;
+}
+
+.link-zeile .handlung {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* ---- Formular (Link anlegen/ändern) ---------------------------------------- */
+
+.formular {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px dashed var(--rand);
+  border-radius: 8px;
+}
+
+.formular .feld {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.formular .feld label {
+  font-size: 13px;
+  color: var(--text-schwach);
+}
+
+.formular .feld input {
+  padding: 8px 10px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: var(--feld-hintergrund, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.formular .feld input:focus-visible {
+  outline: 2px solid var(--akzent);
+  outline-offset: 2px;
+  border-color: var(--akzent);
+}
+
+.formular .feld .meldung {
+  font-size: 12px;
+}
+
+.formular .handlung {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+/* ---- Favoriten ------------------------------------------------------------ */
+
+.abschnitt {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.abschnitt h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.hinweis {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-schwach);
+}
+
+.favoriten-liste, .sicherungen-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.favoriten-liste .eintrag, .sicherungen-liste .eintrag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.favoriten-liste .eintrag .rang {
+  font-size: 13px;
+  color: var(--text-schwach);
+  min-width: 24px;
+}
+
+.favoriten-liste .eintrag .name {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+}
+
+.favoriten-liste .eintrag .handlung {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sicherungen-liste .eintrag .zeit {
+  font-size: 13px;
+  color: var(--text-schwach);
+  font-family: var(--mono, monospace);
+}
+
+.sicherungen-liste .eintrag .name-person {
+  font-size: 13px;
+  color: var(--text-schwach);
+  flex: 1;
+  min-width: 0;
+}
+
+.sicherungen-liste .eintrag .handlung {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* ---- Protokoll-Tabelle ---------------------------------------------------- */
+
+.tabelle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.tabelle th, .tabelle td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rand);
+}
+
+.tabelle th {
+  color: var(--text-schwach);
+  font-weight: 600;
+}
+
+.tabelle td.zeit {
+  font-family: var(--mono, monospace);
+  color: var(--text-schwach);
+}
+
+/* ---- Hilfe-Formular -------------------------------------------------------- */
+
+.hilfe form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hilfe .feld {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hilfe .feld label {
+  font-size: 13px;
+  color: var(--text-schwach);
+}
+
+.hilfe .feld input {
+  padding: 8px 10px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: var(--feld-hintergrund, transparent);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.hilfe .feld input:focus-visible {
+  outline: 2px solid var(--akzent);
+  outline-offset: 2px;
+  border-color: var(--akzent);
+}
+
+/* ---- Fußzeile -------------------------------------------------------------- */
+
+.fuss {
+  border-top: 1px solid var(--rand);
+  padding: 16px 24px;
+  background: var(--oberflaeche);
+}
+
+.fuss-inhalt {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.fuss-text {
+  font-size: 13px;
+  color: var(--text-schwach);
+}
+
+.fuss-hilfe {
+  font-size: 13px;
+  color: var(--akzent);
+  text-decoration: none;
+}
+
+.fuss-hilfe:hover {
+  text-decoration: underline;
+}
+
+.fuss-hilfe:focus-visible {
+  outline: 2px solid var(--akzent);
+  outline-offset: 2px;
+}
+
+/* ---- Ohne JS --------------------------------------------------------------- */
+
+.ohne-js {
+  padding: 16px 24px;
+  background: var(--akzent-weich);
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* ---- 360 px, kein horizontales Scrollen (N-04) ------------------------------ */
+
+@media (max-width: 480px) {
+  .admin-inhalt {
+    padding: 16px;
+    gap: 24px;
+  }
+
+  .admin-kopf .kopf-inhalt {
+    padding: 10px 16px;
+  }
+
+  .link-zeile {
+    grid-template-columns: 1fr;
+  }
+
+  .link-zeile .handlung {
+    justify-content: flex-start;
+  }
+
+  .zeile.ober {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .zeile.ober .handlung {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tabelle {
+    font-size: 12px;
+  }
+
+  .tabelle th, .tabelle td {
+    padding: 6px 8px;
+  }
+}
