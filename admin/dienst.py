@@ -454,8 +454,11 @@ def parse_args(argv):
 
 def main(argv):
     args = parse_args(argv)
+    # B-05: --daten ist ein Ordner, links.json liegt darin.
+    os.makedirs(args.daten, exist_ok=True)
+    daten_pfad = os.path.abspath(os.path.join(args.daten, "links.json"))
     z = kern.zustand(
-        daten_pfad=os.path.abspath(args.daten),
+        daten_pfad=daten_pfad,
         sicherungen_pfad=os.path.abspath(args.sicherungen),
         protokoll_pfad=os.path.abspath(args.protokoll),
         passwort_pfad=os.path.abspath(args.passwort),
