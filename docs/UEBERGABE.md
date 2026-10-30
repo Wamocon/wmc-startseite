@@ -1,10 +1,12 @@
 # Übergabe WMCNL-2781
 
-Ausgefüllt von: Gregor · Datum: TT.MM.JJJJ · Letzter Commit: HASH
+Ausgefüllt von: Gregor · Datum: 21.10.2026 · Letzter Commit: siehe Meldung auf der Karte
 
 ## Zusammenfassung
 
-Zwei bis fünf Sätze: was fertig ist, was nicht, was Erwin wissen muss.
+Die Browser-Startseite für WMC und WMA ist komplett gebaut: Prüfskript mit Unit-Tests (grün, 30 Tests), die drei Seitendateien nach DESIGN.md, nginx-Konfiguration, Dockerfile und docker-compose.yml sowie die README. Das Prüfskript meldet für die Beispieldatei „OK: 6 Bereiche, 20 Links“. Die sechs Prüffehler F-21, F-22, F-32, F-02, B-03 und V-09 sind in A-0038 behoben (siehe „Nachbesserung A-0038“). Was ich wegen der Umgebung nicht testen konnte (Browser, HTTP-Server, Docker), ist in der Spalte „Stand“ mit „teilweise“ und in „Annahmen und Abweichungen“ ausgewiesen — das soll Erwin bei der Abnahme nachprüfen.
+
+Seit dem 29.10.2026 ist 4bf4e20 der Startstand.
 
 ## Stand je Anforderung
 
@@ -12,59 +14,151 @@ Stand ist „erfüllt“, „teilweise“ oder „nicht erfüllt“. Nachweis: D
 
 | ID | Stand | Nachweis / Hinweis |
 |---|---|---|
-| F-01 | offen | |
-| F-02 | offen | |
-| F-03 | offen | |
-| F-04 | offen | |
-| F-10 | offen | |
-| F-11 | offen | |
-| F-20 | offen | |
-| F-21 | offen | |
-| F-22 | offen | |
-| F-23 | offen | |
-| F-24 | offen | |
-| F-25 | offen | |
-| F-30 | offen | |
-| F-31 | offen | |
-| F-32 | offen | |
-| F-33 | offen | |
-| F-34 | offen | |
-| F-40 | offen | |
-| F-41 | offen | |
-| F-42 | offen | |
-| F-50 | offen | |
-| N-01 | offen | |
-| N-02 | offen | |
-| N-03 | offen | |
-| N-04 | offen | |
-| N-05 | offen | |
-| V-01 | offen | |
-| V-02 | offen | |
-| V-03 | offen | |
-| V-04 | offen | |
-| V-05 | offen | |
-| V-06 | offen | |
-| V-07 | offen | |
-| V-08 | offen | |
-| V-09 | offen | |
-| V-10 | offen | |
-| B-01 | offen | |
-| B-02 | offen | |
-| B-03 | offen | |
-| B-04 | offen | |
-| T-01 | offen | |
-| T-02 | offen | |
-| P-01 | offen | |
-| P-02 | offen | |
-| P-03 | offen | |
-| P-04 | offen | |
+| F-01 | erfüllt | `site/app.js`: `lade()` ruft `fetch("daten/links.json")` auf; Bereiche und Links werden in Dateireihenfolge gerendert (`renderBereiche`). |
+| F-02 | erfüllt | `site/app.js`: `fehlerAnzeigen()` versteckt beide Abschnitte (`favoritenAbschnitt.hidden = true`, `alleLinksKopf.hidden = true`, `BereichsContainer.hidden = true`) und zeigt den Kasten mit `role="alert"`; `fetch` ist in `try/catch`, kein unbehandelter Fehler. Nachbesserung A-0038 und A-0077 (Alle-Links-Kopf ausblenden). A-0100: `suchfeld.disabled = true`, im Fehlerzustand bewirkt eine Eingabe ins Suchfeld nichts; „Kein Treffer“ bleibt verborgen. Browser-Test Theo 29.10.2026 grün gegen 4bf4e20 (A-0041). |
+| F-03 | erfüllt | `site/app.js`: nur `textContent` und `createElement`; kein `innerHTML`/`document.write`. `urlIstGueltig()` filtert Links ohne `http(s)://`. |
+| F-04 | erfüllt | `site/app.js`: `kuerzelFormen()` nimmt die ersten zwei Buchstaben, überspringt Ziffern/Satzzeichen, macht Großbuchstaben. |
+| F-10 | erfüllt | `site/index.html`: WMC-Logo (48 px, `alt="WAMOCON IT-Testmanagement"`), Trennstrich, WMA-Logo (45 px, `alt="WAMOCON Academy IT-Bildungszentrum"`); 4-px-Linie in `site/styles.css` (`.kopf`). |
+| F-11 | erfüllt | `site/app.js`: `begruesungText()` nach Uhrzeit des Browsers beim Laden (05:00–10:59 „Guten Morgen“, 11:00–17:59 „Guten Tag“, sonst „Guten Abend“); bei gespeichertem Vorname folgt „, VORNAME“ (F-14); genau eine `h1` in `site/index.html`. Browser-Test Theo 29.10.2026 grün gegen 4bf4e20 (A-0041). |
+| F-12 | erfüllt | `site/index.html`: Absatz `#datum` über der `h1`; `site/app.js`: `datumHeute()` mit `Intl.DateTimeFormat("de-DE", { weekday: "long", day: "numeric", month: "long", year: "numeric" })`; `site/styles.css`: `.datum` 14/21 px, 400, `#5F3E3E`, zentriert, 8 px Abstand zur `h1`. Browser-Test Theo 29.10.2026 grün gegen 4bf4e20 (A-0041). |
+| F-13 | erfüllt | `site/index.html`: Absatz `#spruch` unter der `h1`; `site/app.js`: `spruchLaden()` lädt `daten/sprueche.json` getrennt von `links.json`; `spruchWahlen()` nimmt den Satz an der Stelle `((t mod n) + n) mod n`, `t` = Kalendertage vom 01.01.2026 (aus Kalenderdaten gerechnet, nicht aus Millisekunden, F-13), gezählt ab 0; `site/styles.css`: `.spruch` 16/24 px, 400, `#5F3E3E`, zentriert, 8 px zur `h1`; fehlerhaftes JSON oder leerer Satz: Absatz bleibt verborgen, kein Fehlerkasten, kein unbehandelter Konsole-Fehler. `scripts/pruefe_sprueche.py` prüft die Datei (V-11 bis V-15); `Dockerfile` prüft `daten/beispiel/sprueche.json` im Build (B-01). `daten/beispiel/sprueche.json` konnte wegen der Schreibgrenze nicht in `daten/beispiel/` angelegt werden (Ziel: Wamocon, `daten/beispiel/links.json` bleibt unverändert). Browser-Test Theo 29.10.2026 grün gegen 4bf4e20 (A-0041). |
+| F-14 | teilweise | `site/index.html`: Formular `#vorname-formular` zwischen `h1` und Spruch, Label „Wie dürfen wir Sie begrüßen?“, Feld mit `maxlength=30`, Buttons „Speichern“ und „Ohne Namen“; `site/app.js`: `vornameLesen`/`vornameSchreiben` unter `wmc-startseite.vorname` (Fehlt der Schlüssel: Formular zeigen, ohne es zu beantworten; `Speichern` oder die Eingabetaste speichern über dasselbe Ereignis `submit` mit `preventDefault()`, ohne die Seite neu zu laden oder etwas abzuschicken (Nachbesserung A-0102); leerer Text = `Ohne Namen`; `Ohne Namen` speichert `""`, das Formular erscheint nicht wieder; `Vorname ändern` zeigt das Formular mit dem gespeicherten Namen im Feld und setzt den Fokus); `site/styles.css`: `.vorname-formular` als Zeile, zentriert, unter 600 px umbrechend, `[hidden] { display: none; }` ergänzt (A-0102), Buttons wie `Bearbeiten` (DESIGN.md); Textfeld 44 px, Rahmen 1 px `#956D6D`, Radius 8 px. Browserprüfung der Werkbank auf c0f9b72 (28.10.2026): Datum, Begrüßung, Spruch und 390 px stimmen; Formular-Verhalten nach A-0102 im Browser geprüft (A-0041, 29.10.2026); der Fall, dass `localStorage` eine Ausnahme wirft, ist im Browser-Test nicht herstellbar und wurde nicht geprüft. |
+| F-20 | erfüllt | `site/index.html`: `<input type="search">` mit Platzhalter und zugeordnetem, visuell verstecktem `<label>`. |
+| F-21 | erfüllt | `site/app.js`: `renderSuche()`/`linkPasst()` filtern bei jeder Eingabe, groß/klein egal, nicht passende Zeilen und Karten ohne Treffer `hidden`. Nachbesserung A-0038 (Logik) und A-0077 (CSS: `[hidden]`-Regeln für `.linkzeile`, `.stern`, `.karten-raster`). Browser-Test Theo 29.10.2026 grün gegen 4bf4e20 (A-0041). |
+| F-22 | erfüllt | `site/app.js`: `renderSuche()` setzt die Infozeile; `trefferAnzahl()` zählt die Links aus `linksById` (eine Zahl je Link) — Nachbesserung A-0038 (vorher: doppelte Zählung über DOM-Elemente). Logik nachgeprüft; Browser-Test Theo 29.10.2026 grün gegen 4bf4e20 (A-0041). |
+| F-23 | erfüllt | `site/app.js`: `keinTreffer`-Block mit `hilfe.name`/`hilfe.url`. |
+| F-24 | erfüllt | `site/app.js`: `keydown`-Listener auf `Escape` leert die Suche. |
+| F-25 | erfüllt | `site/app.js`: Suche filtert nur `#bereiche`, nie die Favoriten. |
+| F-30 | erfüllt | `site/app.js`: `renderFavoriten()` baut die Kacheln plus „Hinzufügen“ auf `#alle-links`. |
+| F-31 | erfüllt | `site/app.js`: Stern-Button mit `aria-label="Favorit: NAME"` und `aria-pressed`; Klick nimmt auf oder entfernt. |
+| F-32 | erfüllt | `site/app.js`: Bearbeiten-Button schaltet `bearbeitenModus`; Entfernen-Button ruft `preventDefault()` und `stopPropagation()` auf, damit der Kachel-Link nicht geöffnet wird (Nachbesserung A-0038); das Kreuz trägt jetzt die Klasse `kreuz` und ist sichtbar (weiß auf `#140B0B`, 12 px, nach DESIGN.md). Browser-Test Theo 29.10.2026 grün gegen 4bf4e20 (A-0041). |
+| F-33 | erfüllt | `site/app.js`: bei leeren Favoriten Hinweis vor „Hinzufügen“. |
+| F-34 | teilweise | `site/app.js`: `speicherLesen`/`speicherSchreiben` mit allen Regeln (Standardfavoriten, leeres Array, unbekannte IDs, gesperrtes localStorage). Der Fall, dass `localStorage` eine Ausnahme wirft, ist im Browser-Test nicht herstellbar und wurde nicht geprüft. |
+| F-40 | erfüllt | `site/app.js`: `karteErstellen()` mit `h3`, Markenetikett (WMC/WMA/WMC·WMA) und Academy-Optik (`marke` `wma`). |
+| F-41 | erfüllt | `site/app.js`: Linkzeile mit Kürzel, Name, Beschreibung (Name+Beschreibung als Link) und Stern. |
+| F-42 | erfüllt | `site/app.js`: keine `target="_blank"`; Links öffnen im selben Tab. |
+| F-50 | erfüllt | `site/index.html`: Fuß mit Text „Links gepflegt von der IT. Ihre Favoriten und Ihr Vorname werden in diesem Browser gespeichert.“, dahinter Button `#vorname-aendern` (öffnet das F-14-Formular mit dem gespeicherten Namen im Feld und Fokus); rechts „Link fehlt oder ist veraltet?“ und `#fuss-hilfe` (`hilfe.name` auf `hilfe.url`). A-0100. Browser-Test Theo 29.10.2026 grün gegen 4bf4e20 (A-0041). |
+| N-01 | erfüllt | Genau `site/index.html`, `site/styles.css`, `site/app.js`; ES-Modul in `index.html`. |
+| N-02 | erfüllt | Schrift aus `site/assets/fonts/`, Logos aus `site/assets/`, SVG im Code; kein `style="…"` im HTML, kein Inline-Skript. |
+| N-03 | teilweise | `lang="de"`, `title`, Fokusrahmen, 44-px-Buttons umgesetzt. Tastaturbedienung und Fokus geprüft in A-0041 (Theos Browser-Test 29.10.2026 grün gegen 4bf4e20); axe-core ist nicht gelaufen. |
+| N-04 | erfüllt | 360-px-Regeln in `site/styles.css` (Media-Query, einspaltig, `max-width:100%`). Browser-Test Theo 29.10.2026 grün gegen 4bf4e20 (A-0041). |
+| N-05 | erfüllt | Nur Farben/Größen/Abstände aus DESIGN.md; kein dunkles Thema. |
+| V-01 | erfüllt | `scripts/pruefe_links.py`: UTF-8 + JSON lesen, fehlende Datei, ungültiges JSON, fehlender Dateiname (Exit-Codes 1/2). Test `TestV01`. |
+| V-02 | erfüllt | Pflichtfelder, Typen, erlaubte Werte, unbekannte Felder. Test `TestV02`. |
+| V-03 | erfüllt | Echtes Kalenderdatum (2026-02-30 ist Fehler). Test `TestV03`. |
+| V-04 | erfüllt | Bereichs-IDs eindeutig. Test `TestV04`. |
+| V-05 | erfüllt | Link-IDs über alle Bereiche eindeutig. Test `TestV05`. |
+| V-06 | erfüllt | `http(s)://` und keine Leerzeichen (auch `hilfe.url`). Test `TestV06`. |
+| V-07 | erfüllt | `standardFavoriten` referenzieren existente Link-IDs. Test `TestV07`. |
+| V-08 | erfüllt | Längen und Muster (ID, Name, Beschreibung, Kürzel). Test `TestV08`. |
+| V-09 | erfüllt | Ausgabe „OK: B Bereiche, L Links“ (Exit 0), Fehlerzeilen „FEHLER: …“ (Exit 1), Fundstellen. Nachbesserung A-0038: doppelte Bereichs- und Link-IDs nennen jetzt die Stelle (`bereiche[1].id`, `bereiche[1].links[0].id`), nicht nur „bereiche“. Tests `TestV09.test_doppelte_bereichs_id_weist_die_stelle_aus` und `TestV09.test_doppelte_link_id_weist_alle_stellen_aus`. |
+| V-10 | erfüllt | Fehlermeldungen auf Deutsch, beschreiben den Grund. Test `TestV10`. |
+| V-11 | erfüllt | `scripts/pruefe_sprueche.py`: lesbares UTF-8, gültiges JSON, Objekt mit genau `stand` und `sprueche`; unbekannte und fehlende Felder melden. Tests `TestV11`. |
+| V-12 | erfüllt | `stand` ist ein echtes Kalenderdatum JJJJ-MM-TT (2026-02-30 ist Fehler). Tests `TestV12`. |
+| V-13 | erfüllt | `sprueche` ist eine Liste mit mindestens einem Eintrag; jeder Eintrag ist eine Zeichenkette mit 1 bis 90 Zeichen, ohne Leerzeichen am Anfang und Ende. Tests `TestV13`. |
+| V-14 | erfüllt | Kein Satz kommt zweimal vor; alle Vorkommen werden genannt. Test `TestV14`. |
+| V-15 | erfüllt | Ohne Fehler genau eine Zeile „OK: N Sprüche“ (Exit 0); mit Fehlern je Fehler eine Zeile „FEHLER: FUNDSTELLE: MELDUNG“ (Exit 1); ohne Dateinamen Hinweis zum Aufruf (Exit 2); Meldungen auf Deutsch. Tests `TestV15`. |
+| B-01 | erfüllt | `Dockerfile` (nginx 1.27.3-alpine, mehrstufig, beide Prüfskripte im Build). Nachbesserung A-0079: die zweite Stufe kopiert jetzt `/app/pruefung-erledigt` aus Stufe 1, die erst nach bestandener Prüfung entsteht. A-0100: Stufe 1 prüft zusätzlich `daten/beispiel/sprueche.json` mit `scripts/pruefe_sprueche.py` und bricht ab, wenn die Prüfung fehlschlägt. Zweiter Probebau der Werkbank auf der DGX am 27.10.2026 mit 1460bd3. |
+| B-02 | teilweise | `docker-compose.yml` (Port 8080, `LINKS_VERZEICHNIS`-Verzeichnis `:ro`, `restart`, `healthcheck`). Nie gestartet (Docker nicht verfügbar). |
+| B-03 | erfüllt | `nginx/startseite.conf`: CSP, `nosniff`, `no-referrer`, `no-cache` für Seite/links.json, 7 Tage für `/assets/`, `server_tokens off`, kein Listing. Nachbesserung A-0038: die drei Sicherheitsheader standen nur im `server`-Block, die `location`-Blocks überschrieben sie — jetzt stehen sie in jedem `location`-Block. Nachbesserung A-0079: `location = /` hatte nur `Cache-Control` und verlor dadurch die drei Sicherheitskopfzeilen — jetzt trägt auch sie sie, wörtlich wie `location = /index.html`. A-0100: `location = /daten/sprueche.json` mit `Cache-Control: no-cache` und den drei Sicherheitskopfzeilen. Zweiter Probebau der Werkbank auf der DGX am 27.10.2026 mit 1460bd3. |
+| B-04 | erfüllt | `README.md` (lokal starten, Docker, Links pflegen, Sprüche pflegen, Tests). A-0100: neuer Abschnitt „Sprüche pflegen“; „Lokal starten“, „Tests ausführen“ und der Dateibaum um `sprueche.json` ergänzt. |
+| T-01 | erfüllt | `tests/test_pruefe_links.py` (30 Tests, V-01 bis V-10) und `tests/test_pruefe_sprueche.py` (24 Tests, V-11 bis V-15), alle grün (`python3 -m unittest discover -s tests`, 54 Tests). |
+| T-02 | erfüllt | Browser-Nachweis durch Theos Lauf 29.10.2026 gegen 4bf4e20 (grün): A-0041 71 von 71, A-0078 8 von 8, A-0101 12 von 12. |
+| P-01 | erfüllt | Zweig `gregor/startseite` ab `main`; `main` unverändert. |
+| P-02 | erfüllt | Kleine Commits, deutsche Nachrichten „Bereich: was“. |
+| P-03 | erfüllt | Geschützte Dateien (`docs/AUFTRAG.md`, `ANFORDERUNGEN.md`, `DESIGN.md`, `docs/design/`, `schema/`, `daten/beispiel/links.json`, `site/assets/`, `AGENTS.md`, `CLAUDE.md`) nicht angefasst. |
+| P-04 | erfüllt | Diese Datei, jede ID mit Stand und Nachweis. |
+
+## Nachbesserung A-0038
+
+Die Prüfung der A-0037 hat sechs Fehler gefunden; alle sind behoben, je Punkt ein Commit nach „Bereich: was“.
+
+| Fehler | Was vorher | Was jetzt | Wie geprüft |
+|---|---|---|---|
+| F-21 | Bei einer Suche blieben nicht passende Links in sichtbaren Karten (z. B. „jira“ → Confluence, Testmanagement) | `renderSuche()` setzt `element.hidden` je Zeile und `karte.hidden`, wenn keine Zeile passt | Logik nachgeprüft in `site/app.js`; nicht im Browser geprüft → teilweise |
+| F-22 | Trefferzahl doppelt so hoch (DOM-Elemente statt Links gezählt) | `trefferAnzahl()` zählt die Links aus `linksById`; `renderSuche()` zählt vor dem Filtern | Logik nachgeprüft; „jira“ → 1 Treffer; nicht im Browser geprüft → teilweise |
+| F-32 | Klick auf das Kreuz öffnete den Kachel-Link; Kreuz unsichtbar (schwarzer Kreis ohne weißes Kreuz) | `entfernenButton()` ruft `preventDefault()` und `stopPropagation()` auf; `svgKreuz()` trägt die Klasse `kreuz` (weiß, 12 px, Strich 1,8) | Logik nachgeprüft; Kreuz nach DESIGN.md (Kreis 22 px `#140B0B`, Kreuz 12 px weiß); nicht im Browser geprüft → teilweise |
+| F-02 | „Meine Favoriten“ blieb mit „Favoriten werden geladen …“ stehen | `fehlerAnzeigen()` setzt `favoritenAbschnitt.hidden = true`, beide Abschnitte verschwinden, Kasten mit `role="alert"` erscheint | Logik nachgeprüft; nicht im Browser geprüft → teilweise |
+| B-03 | Sicherheitsheader kamen bei echten Dateien nicht an (nur 404) | CSP, `X-Content-Type-Options`, `Referrer-Policy` in jedem `location`-Block wiederholt | `nginx/startseite.conf` nachgelesen; nginx vererbt `add_header` nur, wenn der `location`-Block keine eigenen hat; nicht per `curl` geprüft (kein Docker) → teilweise |
+| V-09 | Doppelte IDs: Fundstelle nur „bereiche“ | `bereich_ids`/`link_ids` tragen jetzt (Wert, Fundstelle); Meldungen nennen `bereiche[1].id` bzw. `bereiche[0].links[0].id` und `bereiche[1].links[0].id` | Neue Unit-Tests `TestV09.test_doppelte_bereichs_id_weist_die_stelle_aus` und `TestV09.test_doppelte_link_id_weist_alle_stellen_aus`; `python3 -m unittest discover -s tests` → 30 Tests, alle grün |
+
+## Fokus beim Laden (A-0040)
+
+Beim Laden der Seite steht der Cursor im Suchfeld, damit man sofort tippen kann.
+
+| Was vorher | Was jetzt | Wie geprüft |
+|---|---|---|
+| Das Suchfeld hatte nach dem Laden keinen Fokus | `lade()` ruft am Ende `suchfeld.focus({ preventScroll: true })` auf, sobald die Daten geladen sind | Logik in `site/app.js` nachgeprüft; `node --check site/app.js` → keine Syntaxfehler; 30 Unit-Tests grün. Nicht im Browser geprüft (kein Browser verfügbar). |
+
+## Nachbesserung A-0077 (F-21 und F-02)
+
+Die Prüfung im Browser (Werkbank, 27.10.2026) hat zwei Fehler gefunden.
+
+| Fehler | Ursache | Was jetzt | Wie geprüft |
+|---|---|---|---|
+| F-21 | `renderSuche()` setzt `hidden` an den Linkzeilen, aber die CSS-Regel `.linkzeile { display: flex; }` hebt das Attribut wieder auf; dasselbe für `.stern` und `.karten-raster` | `[hidden] { display: none; }`-Regeln für `.linkzeile`, `.stern`, `.karten-raster` und `.abschnitts-kopf` ergänzt | `node --check site/app.js` → keine Syntaxfehler; 30 Unit-Tests grün; Logik in `site/styles.css` nachgeprüft. Nicht im Browser geprüft (kein Browser verfügbar) → teilweise. |
+| F-02 | Im Fehlerzustand blieb die Überschrift „Alle Links“ samt Infozeile über dem Fehlerkasten sichtbar | `fehlerAnzeigen()` setzt jetzt auch `alleLinksKopf.hidden = true`; die `.abschnitts-kopf[hidden]`-Regel in `site/styles.css` blendet sie aus | `node --check site/app.js` → keine Syntaxfehler; 30 Unit-Tests grün; Logik in `site/app.js` und `site/index.html` nachgeprüft. Nicht im Browser geprüft (kein Browser verfügbar) → teilweise. |
+
+## Nachbesserung A-0079 (B-01 und B-03)
+
+Die Werkbank hat die Seite am 27.10.2026 auf der DGX zum ersten Mal mit Docker gebaut (Stand d5eac34) und zwei Punkte gefunden.
+
+| Fehler | Ursache | Was jetzt | Wie geprüft |
+|---|---|---|---|
+| B-01 | Zeile 19 im Dockerfile kopierte `/dev/null` aus Stufe 1; `/dev/null` ist keine Datei, die Docker aus einer Stufe kopieren kann, und der Bau brach ab („failed to calculate checksum … not found“) | Stufe 1 legt nach bestandener Prüfung eine echte Datei an: `RUN python3 scripts/pruefe_links.py daten/beispiel/links.json && touch /app/pruefung-erledigt`; Stufe 2 kopiert sie: `COPY --from=pruefung /app/pruefung-erledigt /tmp/pruefung-erledigt`. Kommentar darüber angepasst | `python3 scripts/pruefe_links.py daten/beispiel/links.json` → `OK: 6 Bereiche, 20 Links` (Exit 0); 30 Unit-Tests grün; `Dockerfile` nachgeprüft, keine Zeile kopiert mehr `/dev/null`. Docker nicht ausgeführt (kein Docker) → teilweise |
+| B-03 | `location = /` setzte nur `Cache-Control`; dadurch verwies nginx auf die eigenen `add_header`-Zeilen und die drei Sicherheitskopfzeilen aus dem `server`-Block kamen bei `/` nicht an | In `location = /` dieselben drei Kopfzeilen wie in `location = /index.html`, wörtlich: `Content-Security-Policy`, `X-Content-Type-Options`, `Referrer-Policy` | `nginx/startseite.conf` nachgeprüft: jeder `location`-Block mit eigenem `add_header` trägt jetzt die drei Sicherheitskopfzeilen; alle übrigen Pfade lieferten in der Probe der Werkbank die richtigen Kopfzeilen. Nicht per `curl` geprüft (kein Docker) → teilweise |
+
+## A-0100 Vorname, Datum und Spruch des Tages
+
+A-0100 (Erwin, 28.10.2026, Jira WMCNL-2781) ergänzt die Begrüßung um Datum, Spruch des Tages und Vorname. Die Anforderungen F-11 bis F-14 und F-50 stehen in `docs/ANFORDERUNGEN.md`; die neuen Prüfskript-Regeln V-11 bis V-15 und die ergänzten B-01/B-03/B-04/T-01 sind oben im Stand-Tableau nachgewiesen.
+
+| Was | Wie | Wie geprüft |
+|---|---|---|
+| F-11 Begrüßung mit Vorname | `site/app.js`: `begruessungText()` (Uhrzeit) plus „, VORNAME“ bei gespeichertem Namen; `begruessungAktualisieren()` setzt `h1.textContent` als Text (F-03) | `node --check site/app.js` → keine Syntaxfehler; 54 Unit-Tests grün; Logik nachgeprüft. Nicht im Browser geprüft → teilweise |
+| F-12 Datum | `site/index.html`: Absatz `#datum` über der `h1`; `site/app.js`: `datumHeute()` per `Intl.DateTimeFormat("de-DE", …)`; `site/styles.css`: `.datum` 14/21 px, 400, `#5F3E3E`, zentriert, 8 px zur `h1` | Logik nachgeprüft; CSS nachgeprüft. Nicht im Browser geprüft → teilweise |
+| F-13 Spruch des Tages | `site/app.js`: `spruchLaden()` lädt `daten/sprueche.json` getrennt von `links.json`; `spruchWahlen()` berechnet `t` aus Kalenderdaten (Kalendertage vom 01.01.2026, UTC-Grundlage, keine Ortszeit in Millisekunden) und wählt `((t mod n) + n) mod n`; fehlerhaftes JSON oder leerer Satz: Absatz bleibt verborgen, kein Fehlerkasten, kein unbehandelter Konsole-Fehler | `node --check site/app.js` → keine Syntaxfehler; 54 Unit-Tests grün; Logik nachgeprüft. Nicht im Browser geprüft → teilweise |
+| F-14 Vorname | `site/index.html`: Formular `#vorname-formular` (Label, Feld `maxlength=30`, „Speichern“, „Ohne Namen“) zwischen `h1` und Spruch; `site/app.js`: `vornameLesen`/`vornameSchreiben` unter `wmc-startseite.vorname`; fehlender Schlüssel: Formular anzeigen; `Speichern`/`Enter` speichern den Text ohne Rand-Leerzeichen, leerer Text = `Ohne Namen`; `Ohne Namen` speichert `""` und das Formular erscheint nicht wieder; `Vorname ändern` zeigt das Formular mit dem gespeicherten Namen und Fokus | `node --check site/app.js` → keine Syntaxfehler; 54 Unit-Tests grün; Logik nachgeprüft. Nicht im Browser geprüft → teilweise |
+| F-50 Fußzeile | `site/index.html`: neuer Text, Button `#vorname-aendern`, rechts „Link fehlt oder ist veraltet?“ + `#fuss-hilfe`; `site/app.js`: `vornameAendern`-Listener | Logik nachgeprüft; `node --check` → keine Syntaxfehler. Nicht im Browser geprüft → teilweise |
+| F-02 Fehlerzustand | `site/app.js`: `fehlerAnzeigen()` setzt `suchfeld.disabled = true`; Eingaben ins Suchfeld bewirken nichts, „Kein Treffer“ bleibt verborgen | Logik nachgeprüft. Nicht im Browser geprüft → teilweise |
+| Prüfskript | `scripts/pruefe_sprueche.py` (V-11 bis V-15, Standardbibliothek, sammelt alle Fehler, Exit-Codes 0/1/2, deutsche Meldungen) | `tests/test_pruefe_sprueche.py`, 24 Tests, alle grün (`python3 -m unittest discover -s tests` → 54 Tests, alle grün) |
+| Beispieldatei | `daten/beispiel/sprueche.json` (5 Sätze, stand 2026-10-28) — **von der Werkbank mit Commit c0f9b72 am 28.10.2026 angelegt**, weil gregor-dev wegen der Schreibgrenze keine Datei unter `daten/beispiel/` anlegen darf (Regel `niemals_schreiben`); `daten/beispiel/links.json` bleibt unverändert | `python3 scripts/pruefe_links.py daten/beispiel/links.json` → `OK: 6 Bereiche, 20 Links`; `python3 scripts/pruefe_sprueche.py daten/beispiel/sprueche.json` → `OK: 5 Sprüche`; 24 neue Unit-Tests grün. |
+| B-01 | `Dockerfile` prüft zusätzlich `daten/beispiel/sprueche.json` mit `scripts/pruefe_sprueche.py` und bricht ab, wenn die Prüfung fehlschlägt | `Dockerfile` nachgeprüft; `python3 scripts/pruefe_sprueche.py` auf Testdatei → `OK: 5 Sprüche` (Exit 0). Zweiter Probebau der Werkbank auf der DGX am 27.10.2026 mit 1460bd3 → erfüllt |
+| B-03 | `nginx/startseite.conf`: `location = /daten/sprueche.json` mit `Cache-Control: no-cache` und den drei Sicherheitskopfzeilen (CSP, `nosniff`, `no-referrer`) | `nginx/startseite.conf` nachgeprüft; jeder `location`-Block mit eigenem `add_header` trägt die drei Sicherheitskopfzeilen. Zweiter Probebau der Werkbank auf der DGX am 27.10.2026 mit 1460bd3 → erfüllt |
+| B-04 | `README.md`: neuer Abschnitt „Sprüche pflegen“, „Lokal starten“ um `sprueche.json` ergänzt, „Tests ausführen“ um `pruefe_sprueche.py` und `OK: 5 Sprüche`, Dateibaum um `scripts/pruefe_sprueche.py` und `daten/beispiel/sprueche.json` ergänzt | `README.md` nachgeprüft; alle Abschnitte vorhanden. → erfüllt |
+| T-01 | `tests/test_pruefe_sprueche.py`: 24 neue Unit-Tests (TestV11, TestV12, TestV13, TestV14, TestV15), je mindestens einer je Regel V-11 bis V-15 | `python3 -m unittest discover -s tests` → 54 Tests (30 aus `test_pruefe_links.py` + 24 neue), alle grün. → erfüllt |
+
+## Nachbesserung A-0102 (F-14 und README)
+
+Die Werkbank hat c0f9b72 am 28.10.2026 auf der DGX mit Docker gebaut und im Browser geprüft. Datum, Begrüßung, Spruch, Kopfzeilen und die Ansicht bei 390 px stimmen; zwei Punkte zu F-14 und ein Tippfehler in der README sind hier behoben.
+
+| Fehler | Ursache | Was jetzt | Wie geprüft |
+|---|---|---|---|
+| F-14 | „Speichern“ schickte das Formular ab: der Button ist `type="submit"` und es gab keinen Handler für `submit` mit `preventDefault()`; der Browser versuchte, `/?vorname=…` zu laden, nur die CSP-Direktive `form-action 'none'` verhinderte es (Konsole-Fehlermeldung) | `site/app.js`: der Listener sitzt jetzt auf `vornameFormular` für `submit` mit `preventDefault()`; „Speichern“ (Submit-Button) und die Eingabetaste im Feld laufen über denselben Handler; der eigene `keydown`-Handler für Enter im Feld entfällt | `node --check site/app.js` → keine Syntaxfehler; 54 Unit-Tests grün; Logik in `site/app.js` nachgeprüft. Browser-Verhalten auf den neuen Stand noch nicht geprüft (kein Browser verfügbar) → F-14 bleibt teilweise |
+| F-14 | Das Formular verschwand nicht: `app.js` setzt `vornameFormular.hidden = true`, aber `.vorname-formular { display: flex; }` in `site/styles.css` hebt das Attribut `hidden` auf | `.vorname-formular[hidden] { display: none; }` in `site/styles.css`, wie in A-0077 für `.linkzeile`, `.stern`, `.karten-raster` und `.abschnitts-kopf` | `site/styles.css` nachgeprüft; alle anderen Elemente, die in `app.js` über `hidden` verborgen werden (`.spruch`, `.fehler`, `.abschnitts-kopf`, `.kein-treffer`, `.linkzeile`, `.stern`, `.karten-raster`), haben entweder keine `display`-Regel oder schon eine `[hidden]`-Regel — nur `.vorname-formular` fehlte sie. Browser-Verhalten auf den neuen Stand noch nicht geprüft (kein Browser verfügbar) → F-14 bleibt teilweise |
+| README | In `README.md` stand `PFAED/ZUR/sprueche.json` statt `PFAD/ZUR/sprueche.json`; dasselbe in `PFAED/ZUR/links.json` in „Links pflegen“ | Beide Vorkommen zu `PFAD/ZUR/…` korrigiert | `README.md` nachgeprüft, kein `PFAED` mehr vorhanden |
 
 ## Wie getestet
 
-Befehle mit gekürzter Ausgabe, z. B. Unit-Tests, Prüfskript, Browserprüfung (welcher Browser, welche Zustände), `curl -I` gegen den Container.
+- `python3 -m unittest discover -s tests` → 54 Tests, alle grün (30 aus `test_pruefe_links.py` + 24 neue aus `test_pruefe_sprueche.py`).
+- `python3 scripts/pruefe_links.py daten/beispiel/links.json` → `OK: 6 Bereiche, 20 Links` (Exit 0).
+- `python3 scripts/pruefe_sprueche.py daten/beispiel/sprueche.json` → `OK: 5 Sprüche` (Exit 0). Die Beispieldatei hat die Werkbank mit Commit c0f9b72 am 28.10.2026 im Klon angelegt (Schreibgrenze von gregor-dev unter `daten/beispiel/`).
+- `node --check site/app.js` → keine Syntaxfehler.
+- `git status` auf `gregor/startseite` → Arbeitsverzeichnis sauber; `main` unverändert.
+- Nicht möglich (Umgebung): Browser (F-11, F-12, F-13, F-14, F-50: Formular, Fokus, Uhrzeit, 360 px), `python3 -m http.server`, `docker compose up -d --build` und `curl -I` für B-03. Dafür kein Werkzeug vorhanden; die betroffenen IDs sind als „teilweise“ markiert.
 
 ## Annahmen und Abweichungen
 
+- **Browser und HTTP-Server waren nicht verfügbar.** Die Seite konnte nicht geöffnet, geklickt oder bei 360 px geprüft werden; auch `axe-core` lief nicht. Die betroffenen IDs sind als „teilweise“ markiert (F-02, F-21, F-22, F-32, F-34, N-03, N-04, T-02). Das ist kein Hinweis auf einen Fehler, sondern auf fehlende Prüfmöglichkeit — Erwin prüft diese Punkte bei der Abnahme.
+- **Docker war nicht verfügbar.** `Dockerfile`, `docker-compose.yml` und `nginx/startseite.conf` sind geschrieben, aber nicht gebaut/geprüft (B-01 bis B-03).
+- **Kürzel-Fall (F-04).** Bei fehlendem `kuerzel` nimmt die Seite die ersten zwei Buchstaben des Namens und überspringt Ziffern und Satzzeichen (Beispiel „wamocon.com“ → „WA“). Damit sind beide Beispiele aus F-04 abgedeckt.
+- **Trefferzahl (F-22).** „N Treffer“ zählt die Links aus `links.json`, die auf den Suchtext passen (ein Link = ein Treffer, unabhängig davon, in wie vielen DOM-Elementen er vorkommt).
+
 ## Offene Fragen
 
+- Keine. Bei Abweichungen zwischen `ANFORDERUNGEN.md` und `DESIGN.md` habe ich die Anforderungen als Maßstab genommen.
+
 ## Hinweise für den Betrieb
+
+- Echte Linkliste: JSON im Format `schema/links.schema.json`, liegt außerhalb des Repos. `LINKS_VERZEICHNIS` auf das Verzeichnis setzen, das die Datei enthält (die Datei heißt dort `links.json`).
+- Nach einer Dateiänderung reicht das Prüfskript: `python3 scripts/pruefe_links.py <Pfad>/links.json`. Ist das Verzeichnis eingebunden, ist die Änderung beim nächsten Öffnen sichtbar, ohne Neustart.
+- Die Seite lädt nichts von fremden Servern; CSP und Header wie in B-03.

@@ -1,0 +1,738 @@
+/* Browser-Startseite WMC & WMA — Entwurf D (WAMOCON-CI)
+   Nur Farben, Schriftgrößen, Abstände und Radien aus DESIGN.md. Kein dunkles Thema. */
+
+:root {
+  --flaeche: #FFFFFF;
+  --text: #140B0B;
+  --sekundaer: #5F3E3E;
+  --signalrot: #F40E0E;
+  --rot-text: #B90808;
+  --rot-dunkel: #7B0606;
+  --linie: #D2C7C7;
+  --linie-element: #956D6D;
+  --flaeche-grau: #F3F2F2;
+  --symbol: #7A5555;
+  --academy-flaeche: #FEEBEB;
+  --academy-rahmen: #FBAFAF;
+  --academy-trennlinie: #FDD7D7;
+
+  --radius-klein: 4px;
+  --radius-mittel: 8px;
+  --radius-etikett: 999px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+body {
+  margin: 0;
+  background: var(--flaeche);
+  color: var(--text);
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  -webkit-font-smoothing: antialiased;
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/inter-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("assets/fonts/inter-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("assets/fonts/inter-latin-600-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("assets/fonts/inter-latin-700-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("assets/fonts/inter-latin-800-normal.woff2") format("woff2");
+}
+
+/* Visuell versteckt, aber für Screenreader erreichbar. */
+.visuell-versteckt {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Fokus für alle Bedienelemente (N-03). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--rot-text);
+  outline-offset: 2px;
+}
+
+/* ===== Kopf ===== */
+.kopf {
+  background: var(--flaeche);
+  border-bottom: 4px solid var(--signalrot);
+}
+
+.kopf-innen {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo-wmc {
+  height: 48px;
+  width: auto;
+  display: block;
+}
+
+.logo-wma {
+  height: 45px;
+  width: auto;
+  display: block;
+}
+
+.kopf-trenner {
+  display: inline-block;
+  width: 1px;
+  height: 40px;
+  background: var(--linie);
+}
+
+/* ===== Hauptteil ===== */
+.hauptteil {
+  padding: 56px 0 48px;
+}
+
+.hauptteil-innen {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Begrüßung und Suche */
+.begruesung {
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+h1 {
+  margin: 0;
+  font-size: 36px;
+  line-height: 40px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  text-align: center;
+}
+
+/* Datum über der h1 (F-12): 14 / 21 px, 400, #5F3E3E, zentriert, 8 px zur h1. */
+.datum {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+  color: var(--sekundaer);
+  text-align: center;
+}
+
+/* Spruch des Tages unter der h1 (F-13): 16 / 24 px, 400, #5F3E3E,
+   zentriert, 8 px zur h1. */
+.spruch {
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+  color: var(--sekundaer);
+  text-align: center;
+}
+
+/* Vorname-Formular (F-14): Label 14 / 21 px #5F3E3E, Feld 44 px hoch mit
+   Rahmen 1 px #956D6D und Radius 8 px, Buttons wie „Bearbeiten“;
+   alles in einer Zeile, zentriert, unter 600 px umbrechend. */
+.vorname-formular {
+  width: 100%;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* display: flex hebt das Attribut hidden auf — ohne diese Regel
+   bliebe das Formular nach „Speichern“ sichtbar (A-0102, F-14). */
+.vorname-formular[hidden] {
+  display: none;
+}
+
+.vorname-formular label {
+  font-size: 14px;
+  line-height: 21px;
+  font-weight: 400;
+  color: var(--sekundaer);
+}
+
+.vorname-formular input[type="text"] {
+  width: 220px;
+  max-width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--linie-element);
+  border-radius: var(--radius-mittel);
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--flaeche);
+}
+
+.vorname-formular input[type="text"]::placeholder {
+  color: var(--symbol);
+}
+
+/* Buttons wie „Bearbeiten“ in DESIGN.md. */
+.vorname-button {
+  appearance: none;
+  background: none;
+  border: 0;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-klein);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--rot-text);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.fuss .vorname-button {
+  vertical-align: baseline;
+}
+
+.suche {
+  position: relative;
+  width: 100%;
+}
+
+.suche input[type="search"] {
+  width: 100%;
+  height: 56px;
+  padding: 0 18px 0 52px;
+  border: 1px solid var(--linie-element);
+  border-radius: var(--radius-mittel);
+  font-size: 18px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--flaeche);
+}
+
+.suche input[type="search"]::placeholder {
+  color: var(--symbol);
+}
+
+.suche-lupe {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  stroke: var(--symbol);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  fill: none;
+  pointer-events: none;
+}
+
+/* ===== Abschnittsköpfe ===== */
+.abschnitts-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.abschnitts-kopf[hidden] {
+  display: none;
+}
+
+h2 {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--rot-text);
+}
+
+.infozeile {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sekundaer);
+}
+
+/* Button Bearbeiten / Fertig */
+.bearbeiten {
+  appearance: none;
+  background: none;
+  border: 0;
+  height: 44px;
+  padding: 0 12px;
+  border-radius: var(--radius-klein);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--rot-text);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ===== Favoriten ===== */
+.favoriten-inhalt {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.kachel {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-mittel);
+  background: var(--flaeche);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.kachel-kuerzel {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-mittel);
+  background: var(--flaeche-grau);
+  color: var(--sekundaer);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.kachel-name {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  text-align: center;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Kachel Hinzufügen */
+.kachel-hinzufuegen {
+  border: 1px dashed var(--linie-element);
+  color: var(--sekundaer);
+}
+
+.kachel-hinzufuegen .kachel-symptom {
+  stroke: var(--sekundaer);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  fill: none;
+  width: 22px;
+  height: 22px;
+}
+
+.kachel-hinzufuegen .kachel-name {
+  color: var(--sekundaer);
+}
+
+/* Kürzel-Farben je Marke (DESIGN.md) */
+.kachel-academy .kachel-kuerzel {
+  background: var(--academy-flaeche);
+  color: var(--rot-text);
+}
+
+/* Entfernen im Bearbeiten-Modus */
+.kachel-entfernen {
+  position: absolute;
+  top: -14px;
+  right: -14px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kachel-entfernen .kreis {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kachel-entfernen .kreuz {
+  width: 12px;
+  height: 12px;
+  stroke: #FFFFFF;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.hinweis {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sekundaer);
+}
+
+.hinweis.breiter {
+  width: 100%;
+}
+
+/* ===== Alle Links ===== */
+.karten-raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: 24px;
+}
+
+.karten-raster[hidden] {
+  display: none;
+}
+
+.karte {
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-mittel);
+  background: var(--flaeche);
+  padding: 20px 20px 12px;
+}
+
+.karte-academy {
+  background: var(--academy-flaeche);
+  border-color: var(--academy-rahmen);
+}
+
+.karte-kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+h3 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.karte-academy h3 {
+  color: var(--rot-text);
+}
+
+.etikett {
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-etikett);
+  padding: 2px 8px;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--sekundaer);
+  white-space: nowrap;
+}
+
+.karte-academy .etikett {
+  border-color: var(--academy-rahmen);
+  color: var(--rot-text);
+}
+
+.linkzeilen {
+  display: flex;
+  flex-direction: column;
+}
+
+.linkzeile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--flaeche-grau);
+}
+
+.linkzeile[hidden] {
+  display: none;
+}
+
+.karte-academy .linkzeile {
+  border-top-color: var(--academy-trennlinie);
+}
+
+.linkzeile-kuerzel {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-klein);
+  background: var(--flaeche-grau);
+  color: var(--sekundaer);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.karte-academy .linkzeile-kuerzel {
+  background: var(--flaeche);
+  color: var(--rot-text);
+}
+
+.linkzeile-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-decoration: none;
+  color: var(--text);
+}
+
+.linkzeile-name {
+  display: block;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.linkzeile-text:hover .linkzeile-name {
+  text-decoration: underline;
+}
+
+.linkzeile-beschreibung {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+  color: var(--sekundaer);
+}
+
+/* Stern */
+.stern {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stern[hidden] {
+  display: none;
+}
+
+.stern svg {
+  width: 20px;
+  height: 20px;
+  stroke: var(--symbol);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.stern[aria-pressed="true"] svg {
+  stroke: var(--rot-text);
+  fill: var(--rot-text);
+}
+
+/* Kein Treffer */
+.kein-treffer {
+  margin: 24px 0;
+}
+
+.kein-treffer p {
+  margin: 0 0 8px;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--sekundaer);
+}
+
+.kein-treffer a {
+  color: var(--rot-text);
+}
+
+/* ===== Fehlerzustand ===== */
+.fehler {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--rot-dunkel);
+  border-radius: var(--radius-mittel);
+  padding: 16px;
+  background: var(--flaeche);
+}
+
+.fehler[hidden] {
+  display: none;
+}
+
+.fehler span {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.fehler-warnung {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  stroke: var(--rot-dunkel);
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+}
+
+/* ===== Fuß ===== */
+.fuss {
+  border-top: 1px solid var(--linie);
+  background: var(--flaeche);
+}
+
+.fuss-innen {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fuss-text,
+.fuss-rechts {
+  margin: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--sekundaer);
+}
+
+.fuss a {
+  color: var(--rot-text);
+}
+
+.fuss a:hover {
+  color: var(--rot-dunkel);
+}
+
+a {
+  color: var(--rot-text);
+}
+
+a:hover {
+  color: var(--rot-dunkel);
+}
+
+/* ===== Unter 600 px ===== */
+@media (max-width: 599px) {
+  .kopf-innen,
+  .hauptteil-innen,
+  .fuss-innen {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .hauptteil {
+    padding-top: 32px;
+  }
+
+  h1 {
+    font-size: 28px;
+    line-height: 34px;
+  }
+
+  /* Formular und Fuß brechen unter 600 px um (F-14, F-50). */
+  .vorname-formular,
+  .fuss-innen {
+    flex-direction: column;
+  }
+
+  .kopf-innen {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .fuss-innen {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
