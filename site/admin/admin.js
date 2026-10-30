@@ -5,7 +5,7 @@
 
 let sitzung = null;          // {csrf} oder null
 let version = 0;             // Versionsnummer der geladenen Liste
-let daten = { Bereiche: [], Standardeinstellung: {} };
+let daten = null;            // geladene Linkliste
 let ungespeichert = false;   // „Nicht gespeicherte Änderungen“
 
 // ---- Helfer ------------------------------------------------------------------
@@ -184,20 +184,21 @@ function idAusName(name, bestehende) {
 
 function alleLinkIds() {
   const s = new Set();
-  for (const b of daten.Bereiche) {
-    for (const l of (b.Links || [])) s.add(l.id);
+  for (const b of (daten && daten.bereiche || [])) {
+    for (const l of (b.links || [])) s.add(l.id);
   }
   return s;
 }
 
 function rendern() {
+  if (!daten || !Array.isArray(daten.bereiche)) return;
   const container = $("#bereiche");
-  container.innerHTML = "";
-  daten.Bereiche.forEach((bereich, bi) => {
+  while (container.firstChild) container.removeChild(container.firstChild);
+  daten.bereiche.forEach((bereich, bi) => {
     const el = document.createElement("div");
     el.className = "bereich";
     el.dataset.bereich = bi;
-    el.innerHTML = bereichHtml(bereich, bi);
+    el.appendChild(bereichBauen(bereich, bi));
     container.appendChild(el);
     bindenBereich(el, bi);
   });
@@ -206,85 +207,119 @@ function rendern() {
   speicherStatus();
 }
 
-function bereichHtml(bereich, bi) {
-  const marke = bereich.Marke || "";
-  const linksHtml = (bereich.Links || []).map((link, li) => linkZeileHtml(bereich, link, bi, li)).join("");
-  return `
-    <div class="bereich-kopf">
-      <div class="marke" aria-hidden="true">${escapeHtml(marke)}</div>
-      <h3>${escapeHtml(bereich.Titel)}</h3>
-      <div class="handlung">
-        <button type="button" class="btn klein" data-aktion="bereich-nach-oben" ${bi === 0 ? "disabled" : ""}>Nach oben</button>
-        <button type="button" class="btn klein" data-aktion="bereich-nach-unten" ${bi === daten.Bereiche.length - 1 ? "disabled" : ""}>Nach unten</button>
-        <button type="button" class="btn klein" data-aktion="bereich-umbenennen">Umbenennen</button>
-        <button type="button" class="btn klein" data-aktion="bereich-loeschen" ${(bereich.Links || []).length ? "disabled title=Der Bereich ist nicht leer." : ""}>Löschen</button>
-        <button type="button" class="btn klein primär" data-aktion="link-hinzufuegen">Link hinzufügen</button>
-      </div>
-    </div>
-    <div class="links">${linksHtml}</div>
-    <div class="formular-container"></div>
-  `;
+// ---- DOM-Helfer (Text statt HTML, L-13) --------------------------------
+
+function el(tag, klasse, text) {
+  const n = document.createElement(tag);
+  if (klasse) n.className = klasse;
+  if (text !== undefined && text !== null) n.textContent = text;
+  return n;
 }
 
-function linkZeileHtml(bereich, link, bi, li) {
-  const isStandard = (daten.Standardeinstellung?.Favoriten || []).some((f) => f.id === link.id);
-  return `
-    <div class="link-zeile" data-link="${escapeHtml(link.id)}">
-      <div class="info">
-        <div class="zeile-oben">
-          <span class="name">${escapeHtml(link.Name)}</span>
-          ${link.Kuerzel ? `<span class="kuerzel">${escapeHtml(link.Kuerzel)}</span>` : ""}
-          ${isStandard ? `<span class="kuerzel standard">Standardfavorit</span>` : ""}
-        </div>
-        ${link.Beschreibung ? `<div class="beschreibung">${escapeHtml(link.Beschreibung)}</div>` : ""}
-        <div class="adresse">${escapeHtml(link.Adresse)}</div>
-      </div>
-      <div class="handlung">
-        <button type="button" class="btn klein" data-aktion="link-nach-oben" ${li === 0 ? "disabled" : ""}>Nach oben</button>
-        <button type="button" class="btn klein" data-aktion="link-nach-unten" ${li === (bereich.Links || []).length - 1 ? "disabled" : ""}>Nach unten</button>
-        <button type="button" class="btn klein" data-aktion="link-aelteren">Ändern</button>
-        <button type="button" class="btn klein" data-aktion="link-loeschen">Löschen</button>
-      </div>
-    </div>
-  `;
+function knopf(text, aktion, zusatzKlasse = "") {
+  const b = el("button", "btn klein" + (zusatzKlasse ? " " + zusatzKlasse : ""));
+  b.type = "button";
+  b.textContent = text;
+  b.dataset.aktion = aktion;
+  return b;
 }
 
-function escapeHtml(text) {
-  return String(text ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+function bereichBauen(bereich, bi) {
+  const wahl = daten.bereiche;
+  const links = bereich.links || [];
+  const wahlLinks = wahl || [];
+
+  // Kopf.
+  const kopf = el("div", "bereich-kopf");
+  kopf.appendChild(el("div", "marke", bereich.marke || ""));
+  kopf.appendChild(el("h3", null, bereich.titel));
+  const handlung = el("div", "handlung");
+  handlung.appendChild(knopf("Nach oben", "bereich-nach-oben"));
+  handlung.lastChild.disabled = bi === 0;
+  const unten = knopf("Nach unten", "bereich-nach-unten");
+  unten.disabled = bi === wahlLinks.length - 1;
+  handlung.appendChild(unten);
+  handlung.appendChild(knopf("Umbenennen", "bereich-umbenennen"));
+  const loeschen = knopf("Löschen", "bereich-loeschen");
+  if (links.length) {
+    loeschen.disabled = true;
+    loeschen.title = "Der Bereich ist nicht leer.";
+  }
+  handlung.appendChild(loeschen);
+  const hinzu = knopf("Link hinzufügen", "link-hinzufuegen", " primär");
+  handlung.appendChild(hinzu);
+  kopf.appendChild(handlung);
+
+  // Links.
+  const linksKiste = el("div", "links");
+  links.forEach((link, li) => {
+    linksKiste.appendChild(linkZeileBauen(bereich, link, bi, li));
+  });
+
+  const wurzel = el("div");
+  wurzel.appendChild(kopf);
+  wurzel.appendChild(linksKiste);
+  wurzel.appendChild(el("div", "formular-container"));
+  return wurzel;
+}
+
+function linkZeileBauen(bereich, link, bi, li) {
+  const links = bereich.links || [];
+  const favoriten = (daten && daten.standardFavoriten) || [];
+  const isStandard = favoriten.indexOf(link.id) !== -1;
+  const zeile = el("div", "link-zeile");
+  zeile.dataset.link = link.id;
+
+  const info = el("div", "info");
+  const oben = el("div", "zeile-oben");
+  oben.appendChild(el("span", "name", link.name));
+  if (link.kuerzel) oben.appendChild(el("span", "kuerzel", link.kuerzel));
+  if (isStandard) oben.appendChild(el("span", "kuerzel standard", "Standardfavorit"));
+  info.appendChild(oben);
+  if (link.beschreibung) info.appendChild(el("div", "beschreibung", link.beschreibung));
+  info.appendChild(el("div", "adresse", link.url));
+  zeile.appendChild(info);
+
+  const handlung = el("div", "handlung");
+  const nachOben = knopf("Nach oben", "link-nach-oben");
+  nachOben.disabled = li === 0;
+  handlung.appendChild(nachOben);
+  const nachUnten = knopf("Nach unten", "link-nach-unten");
+  nachUnten.disabled = li === links.length - 1;
+  handlung.appendChild(nachUnten);
+  handlung.appendChild(knopf("Ändern", "link-aelteren"));
+  handlung.appendChild(knopf("Löschen", "link-loeschen"));
+  zeile.appendChild(handlung);
+  return zeile;
 }
 
 function bindenBereich(el, bi) {
-  el.querySelectorAll("[data-aktion]").forEach((btn) => {
-    btn.addEventListener("click", () => aktion(btn.dataset.aktion, bi, btn));
+  el.querySelectorAll("[data-aktion]").forEach((kn) => {
+    kn.addEventListener("click", () => aktion(kn.dataset.aktion, bi, kn));
   });
 }
 
 // ---- Aktionen ----------------------------------------------------------------
 
 function aktion(name, bi, btn) {
-  const bereich = daten.Bereiche[bi];
+  const bereich = daten.bereiche[bi];
   const linkId = btn ? btn.closest("[data-link]")?.dataset.link : null;
 
   switch (name) {
     case "bereich-nach-oben":
       if (bi > 0) {
-        const tmp = daten.Bereiche[bi];
-        daten.Bereiche[bi] = daten.Bereiche[bi - 1];
-        daten.Bereiche[bi - 1] = tmp;
+        const tmp = daten.bereiche[bi];
+        daten.bereiche[bi] = daten.bereiche[bi - 1];
+        daten.bereiche[bi - 1] = tmp;
         markierenUngespeichert();
         rendern();
       }
       break;
     case "bereich-nach-unten":
-      if (bi < daten.Bereiche.length - 1) {
-        const tmp = daten.Bereiche[bi];
-        daten.Bereiche[bi] = daten.Bereiche[bi + 1];
-        daten.Bereiche[bi + 1] = tmp;
+      if (bi < daten.bereiche.length - 1) {
+        const tmp = daten.bereiche[bi];
+        daten.bereiche[bi] = daten.bereiche[bi + 1];
+        daten.bereiche[bi + 1] = tmp;
         markierenUngespeichert();
         rendern();
       }
@@ -293,12 +328,12 @@ function aktion(name, bi, btn) {
       umbenennenBereich(bi);
       break;
     case "bereich-loeschen":
-      if ((bereich.Links || []).length) {
+      if ((bereich.links || []).length) {
         meldung($("#speichern-meldung"), "Der Bereich ist nicht leer.", "fehler");
         return;
       }
-      if (confirm(`„${bereich.Titel}“ wirklich löschen?`)) {
-        daten.Bereiche.splice(bi, 1);
+      if (confirm(`„${bereich.titel}“ wirklich löschen?`)) {
+        daten.bereiche.splice(bi, 1);
         markierenUngespeichert();
         rendern();
       }
@@ -310,23 +345,23 @@ function aktion(name, bi, btn) {
       formularOeffnen(bi, linkId);
       break;
     case "link-loeschen": {
-      const link = (bereich.Links || []).find((l) => l.id === linkId);
+      const link = (bereich.links || []).find((l) => l.id === linkId);
       if (!link) return;
-      const isStandard = (daten.Standardeinstellung?.Favoriten || []).some((f) => f.id === link.id);
+      const favoriten = (daten && daten.standardFavoriten) || [];
+      const isStandard = favoriten.indexOf(link.id) !== -1;
       const text = isStandard
-        ? `„${link.Name}“ wirklich löschen? Er wird auch aus den Standardfavoriten entfernt.`
-        : `„${link.Name}“ wirklich löschen?`;
+        ? `„${link.name}“ wirklich löschen? Er wird auch aus den Standardfavoriten entfernt.`
+        : `„${link.name}“ wirklich löschen?`;
       if (confirm(text)) {
-        bereich.Links = (bereich.Links || []).filter((l) => l.id !== linkId);
-        daten.Standardeinstellung.Favoriten = (daten.Standardeinstellung?.Favoriten || [])
-          .filter((f) => f.id !== linkId);
+        bereich.links = (bereich.links || []).filter((l) => l.id !== linkId);
+        if (daten) daten.standardFavoriten = (daten.standardFavoriten || []).filter((f) => f !== linkId);
         markierenUngespeichert();
         rendern();
       }
       break;
     }
     case "link-nach-oben": {
-      const links = bereich.Links || [];
+      const links = bereich.links || [];
       const idx = links.findIndex((l) => l.id === linkId);
       if (idx > 0) {
         const tmp = links[idx];
@@ -338,7 +373,7 @@ function aktion(name, bi, btn) {
       break;
     }
     case "link-nach-unten": {
-      const links = bereich.Links || [];
+      const links = bereich.links || [];
       const idx = links.findIndex((l) => l.id === linkId);
       if (idx < links.length - 1) {
         const tmp = links[idx];
@@ -358,133 +393,190 @@ function markierenUngespeichert() {
 }
 
 function umbenennenBereich(bi) {
-  const bereich = daten.Bereiche[bi];
-  const neuerTitel = prompt("Neuer Titel:", bereich.Titel);
+  const bereich = daten.bereiche[bi];
+  const neuerTitel = prompt("Neuer Titel:", bereich.titel);
   if (neuerTitel === null) return;
   if (!neuerTitel.trim()) {
     meldung($("#speichern-meldung"), "Der Titel fehlt.", "fehler");
     return;
   }
-  if (neuerTitel !== bereich.Titel) {
-    bereich.Titel = neuerTitel;
+  if (neuerTitel !== bereich.titel) {
+    bereich.titel = neuerTitel;
     markierenUngespeichert();
     rendern();
   }
-  const neueMarke = prompt("Neue Marke (ein Buchstabe):", bereich.Marke || "");
+  const neueMarke = prompt("Neue Marke (ein Buchstabe):", bereich.marke || "");
   if (neueMarke === null) return;
-  if (neueMarke !== bereich.Marke) {
-    bereich.Marke = neueMarke;
+  if (neueMarke !== bereich.marke) {
+    bereich.marke = neueMarke;
     markierenUngespeichert();
     rendern();
   }
 }
 
 function formularOeffnen(bi, linkId) {
-  const bereich = daten.Bereiche[bi];
+  const bereich = daten.bereiche[bi];
   const container = document.querySelector(`[data-bereich="${bi}"] .formular-container`);
   if (!container) return;
-  const link = linkId ? (bereich.Links || []).find((l) => l.id === linkId) : null;
+  const link = linkId ? (bereich.links || []).find((l) => l.id === linkId) : null;
 
-  container.innerHTML = `
-    <form class="formular" novalidate>
-      <div class="feld">
-        <label for="f-bereich">Bereich</label>
-        <select id="f-bereich" name="bereich">
-          ${daten.Bereiche.map((b, i) => `<option value="${i}" ${i === bi ? "selected" : ""}>${escapeHtml(b.Titel)}</option>`).join("")}
-        </select>
-        <div class="meldung" id="f-bereich-meldung"></div>
-      </div>
-      <div class="feld">
-        <label for="f-name">Name</label>
-        <input id="f-name" name="name" type="text" maxlength="120" value="${link ? escapeHtml(link.Name) : ""}" required>
-        <div class="meldung" id="f-name-meldung"></div>
-      </div>
-      <div class="feld">
-        <label for="f-beschreibung">Beschreibung</label>
-        <input id="f-beschreibung" name="beschreibung" type="text" maxlength="200" value="${link ? escapeHtml(link.Beschreibung || "") : ""}">
-        <div class="meldung" id="f-beschreibung-meldung"></div>
-      </div>
-      <div class="feld">
-        <label for="f-adresse">Adresse</label>
-        <input id="f-adresse" name="adresse" type="text" maxlength="500" value="${link ? escapeHtml(link.Adresse) : ""}" required>
-        <div class="meldung" id="f-adresse-meldung"></div>
-      </div>
-      <div class="feld">
-        <label for="f-kuerzel">Kürzel (freiwillig)</label>
-        <input id="f-kuerzel" name="kuerzel" type="text" maxlength="4" value="${link ? escapeHtml(link.Kuerzel || "") : ""}">
-        <div class="meldung" id="f-kuerzel-meldung"></div>
-      </div>
-      <div class="handlung">
-        <button type="button" class="btn" data-aktion="formular-abbrechen">Abbrechen</button>
-        <button type="submit" class="btn primär">${link ? "Speichern" : "Anlegen"}</button>
-      </div>
-    </form>
-  `;
+  while (container.firstChild) container.removeChild(container.firstChild);
+  const form = el("form", "formular");
+  form.setAttribute("novalidate", "");
 
-  const form = container.querySelector("form");
-  form.querySelector("[data-aktion=formular-abbrechen]").addEventListener("click", () => {
-    container.innerHTML = "";
+  const feldBereich = el("div", "feld");
+  feldBereich.appendChild(el("label", null, "Bereich"));
+  feldBereich.lastChild.htmlFor = "f-bereich";
+  const select = el("select");
+  select.id = "f-bereich";
+  select.name = "bereich";
+  daten.bereiche.forEach((b, i) => {
+    const option = el("option", null, b.titel);
+    option.value = String(i);
+    if (i === bi) option.selected = true;
+    select.appendChild(option);
+  });
+  feldBereich.appendChild(select);
+  feldBereich.appendChild(el("div", "meldung", ""));
+  feldBereich.lastChild.id = "f-bereich-meldung";
+  form.appendChild(feldBereich);
+
+  const feldName = el("div", "feld");
+  feldName.appendChild(el("label", null, "Name"));
+  feldName.lastChild.htmlFor = "f-name";
+  const inputName = el("input");
+  inputName.id = "f-name";
+  inputName.name = "name";
+  inputName.type = "text";
+  inputName.maxLength = 120;
+  inputName.required = true;
+  if (link) inputName.value = link.name;
+  feldName.appendChild(inputName);
+  feldName.appendChild(el("div", "meldung", ""));
+  feldName.lastChild.id = "f-name-meldung";
+  form.appendChild(feldName);
+
+  const feldBeschreibung = el("div", "feld");
+  feldBeschreibung.appendChild(el("label", null, "Beschreibung"));
+  feldBeschreibung.lastChild.htmlFor = "f-beschreibung";
+  const inputBeschreibung = el("input");
+  inputBeschreibung.id = "f-beschreibung";
+  inputBeschreibung.name = "beschreibung";
+  inputBeschreibung.type = "text";
+  inputBeschreibung.maxLength = 200;
+  if (link) inputBeschreibung.value = link.beschreibung || "";
+  feldBeschreibung.appendChild(inputBeschreibung);
+  feldBeschreibung.appendChild(el("div", "meldung", ""));
+  feldBeschreibung.lastChild.id = "f-beschreibung-meldung";
+  form.appendChild(feldBeschreibung);
+
+  const feldAdresse = el("div", "feld");
+  feldAdresse.appendChild(el("label", null, "Adresse"));
+  feldAdresse.lastChild.htmlFor = "f-adresse";
+  const inputAdresse = el("input");
+  inputAdresse.id = "f-adresse";
+  inputAdresse.name = "adresse";
+  inputAdresse.type = "text";
+  inputAdresse.maxLength = 500;
+  inputAdresse.required = true;
+  if (link) inputAdresse.value = link.url;
+  feldAdresse.appendChild(inputAdresse);
+  feldAdresse.appendChild(el("div", "meldung", ""));
+  feldAdresse.lastChild.id = "f-adresse-meldung";
+  form.appendChild(feldAdresse);
+
+  const feldKuerzel = el("div", "feld");
+  feldKuerzel.appendChild(el("label", null, "Kürzel (freiwillig)"));
+  feldKuerzel.lastChild.htmlFor = "f-kuerzel";
+  const inputKuerzel = el("input");
+  inputKuerzel.id = "f-kuerzel";
+  inputKuerzel.name = "kuerzel";
+  inputKuerzel.type = "text";
+  inputKuerzel.maxLength = 4;
+  if (link) inputKuerzel.value = link.kuerzel || "";
+  feldKuerzel.appendChild(inputKuerzel);
+  feldKuerzel.appendChild(el("div", "meldung", ""));
+  feldKuerzel.lastChild.id = "f-kuerzel-meldung";
+  form.appendChild(feldKuerzel);
+
+  const handlung = el("div", "handlung");
+  const abbrechen = el("button", "btn");
+  abbrechen.type = "button";
+  abbrechen.textContent = "Abbrechen";
+  abbrechen.dataset.aktion = "formular-abbrechen";
+  handlung.appendChild(abbrechen);
+  const speichern = el("button", "btn primär");
+  speichern.type = "submit";
+  speichern.textContent = link ? "Speichern" : "Anlegen";
+  handlung.appendChild(speichern);
+  form.appendChild(handlung);
+
+  container.appendChild(form);
+
+  abbrechen.addEventListener("click", () => {
+    while (container.firstChild) container.removeChild(container.firstChild);
   });
 
   // V-02, V-06, V-08: beim Verlassen jedes Feldes prüfen.
-  form.querySelector("#f-name").addEventListener("blur", (e) =>
-    meldung(form.querySelector("#f-name-meldung"), pruefen_name(e.target.value), "fehler"));
-  form.querySelector("#f-adresse").addEventListener("blur", (e) =>
-    meldung(form.querySelector("#f-adresse-meldung"), pruefen_adresse(e.target.value), "fehler"));
-  form.querySelector("#f-beschreibung").addEventListener("blur", (e) =>
-    meldung(form.querySelector("#f-beschreibung-meldung"), pruefen_beschreibung(e.target.value), "fehler"));
-  form.querySelector("#f-kuerzel").addEventListener("blur", (e) =>
-    meldung(form.querySelector("#f-kuerzel-meldung"), pruefen_kuerzel(e.target.value), "fehler"));
+  inputName.addEventListener("blur", (e) =>
+    meldung(container.querySelector("#f-name-meldung"), pruefen_name(e.target.value), "fehler"));
+  inputAdresse.addEventListener("blur", (e) =>
+    meldung(container.querySelector("#f-adresse-meldung"), pruefen_adresse(e.target.value), "fehler"));
+  inputBeschreibung.addEventListener("blur", (e) =>
+    meldung(container.querySelector("#f-beschreibung-meldung"), pruefen_beschreibung(e.target.value), "fehler"));
+  inputKuerzel.addEventListener("blur", (e) =>
+    meldung(container.querySelector("#f-kuerzel-meldung"), pruefen_kuerzel(e.target.value), "fehler"));
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const fehler =
-      pruefen_name(form.querySelector("#f-name").value) ||
-      pruefen_adresse(form.querySelector("#f-adresse").value);
+      pruefen_name(inputName.value) ||
+      pruefen_adresse(inputAdresse.value);
     if (fehler) {
-      meldung(form.querySelector("#f-name-meldung"), fehler, "fehler");
+      meldung(container.querySelector("#f-name-meldung"), fehler, "fehler");
       return;
     }
-    speichernLink(bi, linkId, form);
+    speichernLink(bi, linkId, container);
   });
 }
 
-function speichernLink(bi, linkId, form) {
+function speichernLink(bi, linkId, container) {
+  const form = container.querySelector("form");
   const neuerBi = parseInt(form.querySelector("#f-bereich").value, 10);
   const wert = {
-    Name: form.querySelector("#f-name").value.trim(),
-    Beschreibung: form.querySelector("#f-beschreibung").value.trim(),
-    Adresse: form.querySelector("#f-adresse").value.trim(),
-    Kuerzel: form.querySelector("#f-kuerzel").value.trim(),
+    name: form.querySelector("#f-name").value.trim(),
+    beschreibung: form.querySelector("#f-beschreibung").value.trim(),
+    url: form.querySelector("#f-adresse").value.trim(),
+    kuerzel: form.querySelector("#f-kuerzel").value.trim(),
   };
 
   if (linkId) {
-    const alt = daten.Bereiche[bi].Links.find((l) => l.id === linkId);
+    const alt = daten.bereiche[bi].links.find((l) => l.id === linkId);
     if (!alt) return;
     if (neuerBi === bi) {
-      alt.Name = wert.Name;
-      alt.Beschreibung = wert.Beschreibung;
-      alt.Adresse = wert.Adresse;
-      alt.Kuerzel = wert.Kuerzel || undefined;
+      alt.name = wert.name;
+      alt.beschreibung = wert.beschreibung;
+      alt.url = wert.url;
+      alt.kuerzel = wert.kuerzel || undefined;
     } else {
-      daten.Bereiche[bi].Links = daten.Bereiche[bi].Links.filter((l) => l.id !== linkId);
-      daten.Bereiche[neuerBi].Links.push({
+      daten.bereiche[bi].links = daten.bereiche[bi].links.filter((l) => l.id !== linkId);
+      daten.bereiche[neuerBi].links.push({
         id: alt.id,
-        Name: wert.Name,
-        Beschreibung: wert.Beschreibung,
-        Adresse: wert.Adresse,
-        Kuerzel: wert.Kuerzel || undefined,
+        name: wert.name,
+        beschreibung: wert.beschreibung,
+        url: wert.url,
+        kuerzel: wert.kuerzel || undefined,
       });
     }
   } else {
     const bestehende = alleLinkIds();
-    const id = idAusName(wert.Name, bestehende);
-    daten.Bereiche[neuerBi].Links.push({
+    const id = idAusName(wert.name, bestehende);
+    daten.bereiche[neuerBi].links.push({
       id,
-      Name: wert.Name,
-      Beschreibung: wert.Beschreibung,
-      Adresse: wert.Adresse,
-      Kuerzel: wert.Kuerzel || undefined,
+      name: wert.name,
+      beschreibung: wert.beschreibung,
+      url: wert.url,
+      kuerzel: wert.kuerzel || undefined,
     });
   }
 
@@ -497,58 +589,74 @@ function speichernLink(bi, linkId, form) {
 function rendernFavoriten() {
   const container = $("#favoriten");
   if (!container) return;
-  const favoriten = daten.Standardeinstellung?.Favoriten || [];
+  const favoriten = (daten && daten.standardFavoriten) || [];
   const alleLinks = [];
-  daten.Bereiche.forEach((b) => (b.Links || []).forEach((l) => alleLinks.push(l)));
+  (daten && daten.bereiche || []).forEach((b) => (b.links || []).forEach((l) => alleLinks.push(l)));
 
-  container.innerHTML = "";
+  while (container.firstChild) container.removeChild(container.firstChild);
   alleLinks.forEach((link) => {
-    const ist = favoriten.findIndex((f) => f.id === link.id);
+    const ist = favoriten.indexOf(link.id);
     const el = document.createElement("div");
     el.className = "eintrag";
     if (ist !== -1) {
-      el.innerHTML = `
-        <span class="rang">${ist + 1}.</span>
-        <span class="name">${escapeHtml(link.Name)}</span>
-        <div class="handlung">
-          <button type="button" class="btn klein" data-aktion="fav-oben" ${ist === 0 ? "disabled" : ""}>Nach oben</button>
-          <button type="button" class="btn klein" data-aktion="fav-unten" ${ist === favoriten.length - 1 ? "disabled" : ""}>Nach unten</button>
-          <button type="button" class="btn klein" data-aktion="fav-loeschen">Entfernen</button>
-        </div>
-      `;
+      el.appendChild(el("span", "rang", ist + 1 + "."));
+      el.appendChild(el("span", "name", link.name));
+      const handlung = el("div", "handlung");
+      const oben = el("button", "btn klein");
+      oben.type = "button";
+      oben.textContent = "Nach oben";
+      oben.dataset.aktion = "fav-oben";
+      oben.disabled = ist === 0;
+      handlung.appendChild(oben);
+      const unten = el("button", "btn klein");
+      unten.type = "button";
+      unten.textContent = "Nach unten";
+      unten.dataset.aktion = "fav-unten";
+      unten.disabled = ist === favoriten.length - 1;
+      handlung.appendChild(unten);
+      const loeschen = el("button", "btn klein");
+      loeschen.type = "button";
+      loeschen.textContent = "Entfernen";
+      loeschen.dataset.aktion = "fav-loeschen";
+      handlung.appendChild(loeschen);
+      el.appendChild(handlung);
     } else {
-      el.innerHTML = `
-        <span class="rang">–</span>
-        <span class="name">${escapeHtml(link.Name)}</span>
-        <div class="handlung">
-          <button type="button" class="btn klein" data-aktion="fav-hinzufuegen" ${favoriten.length >= 5 ? "disabled title=Höchstens 5." : ""}>Hinzufügen</button>
-        </div>
-      `;
+      el.appendChild(el("span", "rang", "–"));
+      el.appendChild(el("span", "name", link.name));
+      const handlung = el("div", "handlung");
+      const hinzufuegen = el("button", "btn klein");
+      hinzufuegen.type = "button";
+      hinzufuegen.textContent = "Hinzufügen";
+      hinzufuegen.dataset.aktion = "fav-hinzufuegen";
+      hinzufuegen.disabled = favoriten.length >= 5;
+      if (favoriten.length >= 5) hinzufuegen.title = "Höchstens 5.";
+      handlung.appendChild(hinzufuegen);
+      el.appendChild(handlung);
     }
-    el.querySelectorAll("[data-aktion]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const akt = btn.dataset.aktion;
+    el.querySelectorAll("[data-aktion]").forEach((kn) => {
+      kn.addEventListener("click", () => {
+        const akt = kn.dataset.aktion;
         if (akt === "fav-hinzufuegen") {
           if (favoriten.length >= 5) return;
-          favoriten.push({ id: link.id, name: link.Name });
+          favoriten.push(link.id);
         } else if (akt === "fav-loeschen") {
-          daten.Standardeinstellung.Favoriten = favoriten.filter((f) => f.id !== link.id);
+          daten.standardFavoriten = favoriten.filter((f) => f !== link.id);
         } else if (akt === "fav-oben") {
-          const idx = favoriten.findIndex((f) => f.id === link.id);
+          const idx = favoriten.indexOf(link.id);
           if (idx > 0) {
             const t = favoriten[idx];
             favoriten[idx] = favoriten[idx - 1];
             favoriten[idx - 1] = t;
           }
         } else if (akt === "fav-unten") {
-          const idx = favoriten.findIndex((f) => f.id === link.id);
+          const idx = favoriten.indexOf(link.id);
           if (idx < favoriten.length - 1) {
             const t = favoriten[idx];
             favoriten[idx] = favoriten[idx + 1];
             favoriten[idx + 1] = t;
           }
         }
-        daten.Standardeinstellung.Favoriten = favoriten;
+        daten.standardFavoriten = favoriten;
         markierenUngespeichert();
         rendernFavoriten();
       });
@@ -560,11 +668,11 @@ function rendernFavoriten() {
 // ---- Hilfe-Link -----------------------------------------------------------------
 
 function rendernHilfe() {
-  const hilfe = daten.Standardeinstellung?.Hilfe || {};
+  const hilfe = (daten && daten.hilfe) || {};
   const hilfeName = hilfe.name || "Link fehlt?";
-  const hilfeAdresse = hilfe.adresse || "";
+  const hilfeUrl = hilfe.url || "";
   $("#hilfe-name").value = hilfeName;
-  $("#hilfe-adresse").value = hilfeAdresse;
+  $("#hilfe-adresse").value = hilfeUrl;
   meldung($("#hilfe-name-meldung"), "");
   meldung($("#hilfe-adresse-meldung"), "");
   // V-02, V-06, V-08: beim Verlassen jedes Feldes prüfen.
@@ -576,14 +684,14 @@ function rendernHilfe() {
 
 function hilfeSpeichern() {
   const name = $("#hilfe-name").value.trim();
-  const adresse = $("#hilfe-adresse").value.trim();
+  const url = $("#hilfe-adresse").value.trim();
   const fehlerName = pruefen_name(name);
-  const fehlerAdresse = pruefen_adresse(adresse);
+  const fehlerUrl = pruefen_adresse(url);
   meldung($("#hilfe-name-meldung"), fehlerName, "fehler");
-  meldung($("#hilfe-adresse-meldung"), fehlerAdresse, "fehler");
-  if (fehlerName || fehlerAdresse) return;
-  if (!daten.Standardeinstellung) daten.Standardeinstellung = {};
-  daten.Standardeinstellung.Hilfe = { name, adresse };
+  meldung($("#hilfe-adresse-meldung"), fehlerUrl, "fehler");
+  if (fehlerName || fehlerUrl) return;
+  if (!daten) daten = {};
+  daten.hilfe = { name, url };
   markierenUngespeichert();
 }
 
@@ -592,22 +700,22 @@ function hilfeSpeichern() {
 function rendernProtokoll(eintraege) {
   const tbody = $("#protokoll-zeilen");
   if (!tbody) return;
-  tbody.innerHTML = "";
+  while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
   eintraege.forEach((e) => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="zeit">${escapeHtml(zeitKurz(e.zeit))}</td>
-      <td>${escapeHtml(e.name)}</td>
-      <td>${e.links_neu ?? 0}</td>
-      <td>${e.links_geaendert ?? 0}</td>
-      <td>${e.links_geloesch ?? 0}</td>
-      <td>${e.zurueckgeholt ? "Stand zurückgeholt" : escapeHtml(e.sicherung || "")}</td>
-    `;
+    tr.appendChild(el("td", "zeit", zeitKurz(e.zeit)));
+    tr.appendChild(el("td", null, e.name));
+    tr.appendChild(el("td", null, String(e.links_neu ?? 0)));
+    tr.appendChild(el("td", null, String(e.links_geaendert ?? 0)));
+    tr.appendChild(el("td", null, String(e.links_geloesch ?? 0)));
+    tr.appendChild(el("td", null, e.zurueckgeholt ? "Stand zurückgeholt" : (e.sicherung || "")));
     tbody.appendChild(tr);
   });
   if (!eintraege.length) {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td colspan="6" class="leer">Noch keine Einträge.</td>`;
+    const td = el("td", "leer", "Noch keine Einträge.");
+    td.colSpan = 6;
+    tr.appendChild(td);
     tbody.appendChild(tr);
   }
 }
@@ -625,17 +733,19 @@ function zeitKurz(iso) {
 function rendernSicherungen(liste) {
   const container = $("#sicherungen");
   if (!container) return;
-  container.innerHTML = "";
+  while (container.firstChild) container.removeChild(container.firstChild);
   liste.forEach((s) => {
     const el = document.createElement("div");
     el.className = "eintrag";
-    el.innerHTML = `
-      <span class="zeit">${escapeHtml(zeitKurz(s.zeit))}</span>
-      <span class="name-person">${escapeHtml(s.name_person || "–")}</span>
-      <div class="handlung">
-        <button type="button" class="btn klein" data-namen="${escapeHtml(s.name)}">Diesen Stand zurückholen</button>
-      </div>
-    `;
+    el.appendChild(el("span", "zeit", zeitKurz(s.zeit)));
+    el.appendChild(el("span", "name-person", s.name_person || "–"));
+    const handlung = el("div", "handlung");
+    const zurueckholen = el("button", "btn klein");
+    zurueckholen.type = "button";
+    zurueckholen.textContent = "Diesen Stand zurückholen";
+    zurueckholen.dataset.namen = s.name;
+    handlung.appendChild(zurueckholen);
+    el.appendChild(handlung);
     el.querySelector("button").addEventListener("click", async () => {
       const text = `Stand von ${zeitKurz(s.zeit)} zurückholen? Nicht gespeicherte Änderungen gehen verloren.`;
       if (!confirm(text)) return;
@@ -661,7 +771,7 @@ function rendernSicherungen(liste) {
   if (!liste.length) {
     const el = document.createElement("div");
     el.className = "eintrag";
-    el.innerHTML = `<span class="name-person">Noch keine Sicherungen.</span>`;
+    el.appendChild(el("span", "name-person", "Noch keine Sicherungen."));
     container.appendChild(el);
   }
 }
