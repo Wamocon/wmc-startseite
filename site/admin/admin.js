@@ -171,6 +171,7 @@ function pruefen_adresse(wert) {
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
     return "Die Adresse braucht http:// oder https://.";
   }
+  if (/\s/.test(url)) return "Die Adresse enthält keine Leerzeichen.";
   if (url.length > 500) return "Die Adresse hat höchstens 500 Zeichen.";
   try {
     const neu = new URL(url);
