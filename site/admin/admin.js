@@ -10,34 +10,55 @@ let ungespeichert = false;   // „Nicht gespeicherte Änderungen“
 
 // ---- Helfer ------------------------------------------------------------------
 
+const NAME_SCHLUESSEL = "wmc_admin_name";
+const CSRF_SCHLUESSEL = "wmc_admin_csrf";
+
+// Der Speicher des Browsers kann fehlen (privates Fenster); dann ohne ihn weiter.
+function speicherLesen(speicher, schluessel) {
+  try {
+    return speicher.getItem(schluessel);
+  } catch {
+    return null;
+  }
+}
+
+function speicherSchreiben(speicher, schluessel, wert) {
+  try {
+    if (wert === null) speicher.removeItem(schluessel);
+    else speicher.setItem(schluessel, wert);
+  } catch {
+    // ohne Speicher weiter
+  }
+}
+
 function $(sel) {
   return document.querySelector(sel);
 }
 
 function status(text, klasse = "") {
-  const el = $("#status");
-  if (el) {
-    el.textContent = text;
-    el.className = "status " + klasse;
+  const feld = $("#status");
+  if (feld) {
+    feld.textContent = text;
+    feld.className = "status " + klasse;
   }
 }
 
-function meldung(el, text, klasse = "") {
-  if (el) {
-    el.textContent = text;
-    el.className = "meldung " + klasse;
+function meldung(ziel, text, klasse = "") {
+  if (ziel) {
+    ziel.textContent = text;
+    ziel.className = "meldung " + klasse;
   }
 }
 
 function speicherStatus() {
-  const el = $("#status");
-  if (!el) return;
+  const feld = $("#status");
+  if (!feld) return;
   if (ungespeichert) {
-    el.textContent = "Nicht gespeicherte Änderungen";
-    el.className = "status ungespeichert";
+    feld.textContent = "Nicht gespeicherte Änderungen";
+    feld.className = "status ungespeichert";
   } else {
-    el.textContent = "Gespeichert";
-    el.className = "status";
+    feld.textContent = "Gespeichert";
+    feld.className = "status";
   }
 }
 
@@ -80,6 +101,7 @@ async function anmelden() {
       koerper: { passwort },
     });
     sitzung = { csrf: antwort.token };
+    speicherSchreiben(sessionStorage, CSRF_SCHLUESSEL, antwort.token);
     version = 0;
     await laden();
     $("#anmeldung").hidden = true;
@@ -99,6 +121,7 @@ async function abmelden() {
     // Abmelden schlägt nicht fehl; die Sitzung wird lokal beendet.
   }
   sitzung = null;
+  speicherSchreiben(sessionStorage, CSRF_SCHLUESSEL, null);
   ungespeichert = false;
   location.href = "/admin";
 }
@@ -138,7 +161,7 @@ async function sicherungenLaden() {
 
 function pruefen_name(wert) {
   if (!wert || !wert.trim()) return "Der Name fehlt.";
-  if (wert.length > 120) return "Der Name hat höchstens 120 Zeichen.";
+  if (wert.trim().length > 40) return "Der Name hat höchstens 40 Zeichen.";
   return "";
 }
 
@@ -159,13 +182,21 @@ function pruefen_adresse(wert) {
 }
 
 function pruefen_beschreibung(wert) {
-  if (wert && wert.length > 200) return "Die Beschreibung hat höchstens 200 Zeichen.";
+  if (!wert || !wert.trim()) return "Die Beschreibung fehlt.";
+  if (wert.trim().length > 60) return "Die Beschreibung hat höchstens 60 Zeichen.";
   return "";
 }
 
 function pruefen_kuerzel(wert) {
   if (!wert) return "";
-  if (!/^[a-z]{1,4}$/.test(wert)) return "Das Kürzel braucht 1 bis 4 Kleinbuchstaben.";
+  if (!/^[A-Z0-9ÄÖÜ]{1,3}$/.test(wert)) return "Das Kürzel hat 1 bis 3 Großbuchstaben oder Ziffern.";
+  return "";
+}
+
+const MARKEN = ["wmc", "wma", "beide"];
+
+function pruefen_marke(wert) {
+  if (MARKEN.indexOf(wert) === -1) return "Die Marke ist wmc, wma oder beide.";
   return "";
 }
 
@@ -195,12 +226,12 @@ function rendern() {
   const container = $("#bereiche");
   while (container.firstChild) container.removeChild(container.firstChild);
   daten.bereiche.forEach((bereich, bi) => {
-    const el = document.createElement("div");
-    el.className = "bereich";
-    el.dataset.bereich = bi;
-    el.appendChild(bereichBauen(bereich, bi));
-    container.appendChild(el);
-    bindenBereich(el, bi);
+    const kiste = document.createElement("div");
+    kiste.className = "bereich";
+    kiste.dataset.bereich = bi;
+    kiste.appendChild(bereichBauen(bereich, bi));
+    container.appendChild(kiste);
+    bindenBereich(kiste, bi);
   });
   rendernFavoriten();
   rendernHilfe();
@@ -216,11 +247,11 @@ function el(tag, klasse, text) {
   return n;
 }
 
-function knopf(text, aktion, zusatzKlasse = "") {
+function knopf(text, aktionName, zusatzKlasse = "") {
   const b = el("button", "btn klein" + (zusatzKlasse ? " " + zusatzKlasse : ""));
   b.type = "button";
   b.textContent = text;
-  b.dataset.aktion = aktion;
+  b.dataset.aktion = aktionName;
   return b;
 }
 
@@ -293,8 +324,8 @@ function linkZeileBauen(bereich, link, bi, li) {
   return zeile;
 }
 
-function bindenBereich(el, bi) {
-  el.querySelectorAll("[data-aktion]").forEach((kn) => {
+function bindenBereich(kiste, bi) {
+  kiste.querySelectorAll("[data-aktion]").forEach((kn) => {
     kn.addEventListener("click", () => aktion(kn.dataset.aktion, bi, kn));
   });
 }
@@ -400,18 +431,55 @@ function umbenennenBereich(bi) {
     meldung($("#speichern-meldung"), "Der Titel fehlt.", "fehler");
     return;
   }
+  if (neuerTitel.trim().length > 40) {
+    meldung($("#speichern-meldung"), "Der Titel hat höchstens 40 Zeichen.", "fehler");
+    return;
+  }
   if (neuerTitel !== bereich.titel) {
     bereich.titel = neuerTitel;
     markierenUngespeichert();
     rendern();
   }
-  const neueMarke = prompt("Neue Marke (ein Buchstabe):", bereich.marke || "");
-  if (neueMarke === null) return;
+  const eingabe = prompt("Marke (wmc, wma oder beide):", bereich.marke || "");
+  if (eingabe === null) return;
+  const neueMarke = eingabe.trim().toLowerCase();
+  const fehlerMarke = pruefen_marke(neueMarke);
+  if (fehlerMarke) {
+    meldung($("#speichern-meldung"), fehlerMarke, "fehler");
+    return;
+  }
   if (neueMarke !== bereich.marke) {
     bereich.marke = neueMarke;
     markierenUngespeichert();
     rendern();
   }
+}
+
+function bereichAnlegen() {
+  const titel = prompt("Titel des neuen Bereichs:", "");
+  if (titel === null) return;
+  if (!titel.trim()) {
+    meldung($("#speichern-meldung"), "Der Titel fehlt.", "fehler");
+    return;
+  }
+  if (titel.trim().length > 40) {
+    meldung($("#speichern-meldung"), "Der Titel hat höchstens 40 Zeichen.", "fehler");
+    return;
+  }
+  const eingabe = prompt("Marke (wmc, wma oder beide):", "wmc");
+  if (eingabe === null) return;
+  const marke = eingabe.trim().toLowerCase();
+  const fehlerMarke = pruefen_marke(marke);
+  if (fehlerMarke) {
+    meldung($("#speichern-meldung"), fehlerMarke, "fehler");
+    return;
+  }
+  const bestehende = new Set(daten.bereiche.map((b) => b.id));
+  daten.bereiche.push({ id: idAusName(titel.trim(), bestehende), titel: titel.trim(), marke, links: [] });
+  markierenUngespeichert();
+  rendern();
+  meldung($("#speichern-meldung"),
+    "Bereich angelegt. Er braucht mindestens einen Link, bevor die Liste gespeichert werden kann.", "");
 }
 
 function formularOeffnen(bi, linkId) {
@@ -448,7 +516,7 @@ function formularOeffnen(bi, linkId) {
   inputName.id = "f-name";
   inputName.name = "name";
   inputName.type = "text";
-  inputName.maxLength = 120;
+  inputName.maxLength = 40;
   inputName.required = true;
   if (link) inputName.value = link.name;
   feldName.appendChild(inputName);
@@ -463,7 +531,8 @@ function formularOeffnen(bi, linkId) {
   inputBeschreibung.id = "f-beschreibung";
   inputBeschreibung.name = "beschreibung";
   inputBeschreibung.type = "text";
-  inputBeschreibung.maxLength = 200;
+  inputBeschreibung.maxLength = 60;
+  inputBeschreibung.required = true;
   if (link) inputBeschreibung.value = link.beschreibung || "";
   feldBeschreibung.appendChild(inputBeschreibung);
   feldBeschreibung.appendChild(el("div", "meldung", ""));
@@ -492,7 +561,10 @@ function formularOeffnen(bi, linkId) {
   inputKuerzel.id = "f-kuerzel";
   inputKuerzel.name = "kuerzel";
   inputKuerzel.type = "text";
-  inputKuerzel.maxLength = 4;
+  inputKuerzel.maxLength = 3;
+  inputKuerzel.addEventListener("input", () => {
+    inputKuerzel.value = inputKuerzel.value.toUpperCase();
+  });
   if (link) inputKuerzel.value = link.kuerzel || "";
   feldKuerzel.appendChild(inputKuerzel);
   feldKuerzel.appendChild(el("div", "meldung", ""));
@@ -505,10 +577,10 @@ function formularOeffnen(bi, linkId) {
   abbrechen.textContent = "Abbrechen";
   abbrechen.dataset.aktion = "formular-abbrechen";
   handlung.appendChild(abbrechen);
-  const speichern = el("button", "btn primär");
-  speichern.type = "submit";
-  speichern.textContent = link ? "Speichern" : "Anlegen";
-  handlung.appendChild(speichern);
+  const knopfSpeichern = el("button", "btn primär");
+  knopfSpeichern.type = "submit";
+  knopfSpeichern.textContent = link ? "Speichern" : "Anlegen";
+  handlung.appendChild(knopfSpeichern);
   form.appendChild(handlung);
 
   container.appendChild(form);
@@ -529,13 +601,18 @@ function formularOeffnen(bi, linkId) {
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const fehler =
-      pruefen_name(inputName.value) ||
-      pruefen_adresse(inputAdresse.value);
-    if (fehler) {
-      meldung(container.querySelector("#f-name-meldung"), fehler, "fehler");
-      return;
-    }
+    const pruefungen = [
+      ["#f-name-meldung", pruefen_name(inputName.value)],
+      ["#f-beschreibung-meldung", pruefen_beschreibung(inputBeschreibung.value)],
+      ["#f-adresse-meldung", pruefen_adresse(inputAdresse.value)],
+      ["#f-kuerzel-meldung", pruefen_kuerzel(inputKuerzel.value.trim())],
+    ];
+    let fehlerDa = false;
+    pruefungen.forEach(([ziel, fehler]) => {
+      meldung(container.querySelector(ziel), fehler, "fehler");
+      if (fehler) fehlerDa = true;
+    });
+    if (fehlerDa) return;
     speichernLink(bi, linkId, container);
   });
 }
@@ -592,15 +669,20 @@ function rendernFavoriten() {
   const favoriten = (daten && daten.standardFavoriten) || [];
   const alleLinks = [];
   (daten && daten.bereiche || []).forEach((b) => (b.links || []).forEach((l) => alleLinks.push(l)));
+  // Erst die Standardfavoriten in ihrer Reihenfolge, dann alle übrigen Links (L-08).
+  alleLinks.sort((a, b) => {
+    const ia = favoriten.indexOf(a.id);
+    const ib = favoriten.indexOf(b.id);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
 
   while (container.firstChild) container.removeChild(container.firstChild);
   alleLinks.forEach((link) => {
     const ist = favoriten.indexOf(link.id);
-    const el = document.createElement("div");
-    el.className = "eintrag";
+    const zeile = el("div", "eintrag");
     if (ist !== -1) {
-      el.appendChild(el("span", "rang", ist + 1 + "."));
-      el.appendChild(el("span", "name", link.name));
+      zeile.appendChild(el("span", "rang", ist + 1 + "."));
+      zeile.appendChild(el("span", "name", link.name));
       const handlung = el("div", "handlung");
       const oben = el("button", "btn klein");
       oben.type = "button";
@@ -619,10 +701,10 @@ function rendernFavoriten() {
       loeschen.textContent = "Entfernen";
       loeschen.dataset.aktion = "fav-loeschen";
       handlung.appendChild(loeschen);
-      el.appendChild(handlung);
+      zeile.appendChild(handlung);
     } else {
-      el.appendChild(el("span", "rang", "–"));
-      el.appendChild(el("span", "name", link.name));
+      zeile.appendChild(el("span", "rang", "–"));
+      zeile.appendChild(el("span", "name", link.name));
       const handlung = el("div", "handlung");
       const hinzufuegen = el("button", "btn klein");
       hinzufuegen.type = "button";
@@ -631,16 +713,16 @@ function rendernFavoriten() {
       hinzufuegen.disabled = favoriten.length >= 5;
       if (favoriten.length >= 5) hinzufuegen.title = "Höchstens 5.";
       handlung.appendChild(hinzufuegen);
-      el.appendChild(handlung);
+      zeile.appendChild(handlung);
     }
-    el.querySelectorAll("[data-aktion]").forEach((kn) => {
+    zeile.querySelectorAll("[data-aktion]").forEach((kn) => {
       kn.addEventListener("click", () => {
         const akt = kn.dataset.aktion;
         if (akt === "fav-hinzufuegen") {
           if (favoriten.length >= 5) return;
           favoriten.push(link.id);
         } else if (akt === "fav-loeschen") {
-          daten.standardFavoriten = favoriten.filter((f) => f !== link.id);
+          favoriten.splice(favoriten.indexOf(link.id), 1);
         } else if (akt === "fav-oben") {
           const idx = favoriten.indexOf(link.id);
           if (idx > 0) {
@@ -661,7 +743,7 @@ function rendernFavoriten() {
         rendernFavoriten();
       });
     });
-    container.appendChild(el);
+    container.appendChild(zeile);
   });
 }
 
@@ -675,11 +757,6 @@ function rendernHilfe() {
   $("#hilfe-adresse").value = hilfeUrl;
   meldung($("#hilfe-name-meldung"), "");
   meldung($("#hilfe-adresse-meldung"), "");
-  // V-02, V-06, V-08: beim Verlassen jedes Feldes prüfen.
-  $("#hilfe-name").addEventListener("blur", (e) =>
-    meldung($("#hilfe-name-meldung"), pruefen_name(e.target.value), "fehler"));
-  $("#hilfe-adresse").addEventListener("blur", (e) =>
-    meldung($("#hilfe-adresse-meldung"), pruefen_adresse(e.target.value), "fehler"));
 }
 
 function hilfeSpeichern() {
@@ -703,12 +780,21 @@ function rendernProtokoll(eintraege) {
   while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
   eintraege.forEach((e) => {
     const tr = document.createElement("tr");
-    tr.appendChild(el("td", "zeit", zeitKurz(e.zeit)));
-    tr.appendChild(el("td", null, e.name));
-    tr.appendChild(el("td", null, String(e.links_neu ?? 0)));
-    tr.appendChild(el("td", null, String(e.links_geaendert ?? 0)));
-    tr.appendChild(el("td", null, String(e.links_geloesch ?? 0)));
-    tr.appendChild(el("td", null, e.zurueckgeholt ? "Stand zurückgeholt" : (e.sicherung || "")));
+    const zellen = [
+      ["Zeit", zeitKurz(e.zeit)],
+      ["Name", e.name],
+      ["Neu", anzahl(e.links_neu, e.bereiche_neu)],
+      ["Geändert", anzahl(e.links_geaendert, e.bereiche_geaendert)],
+      ["Gelöscht", anzahl(e.links_geloesch, e.bereiche_geloesch)],
+      ["Sicherung", e.zurueckgeholt
+        ? `Stand von ${zeitAusSicherung(e.zurueckgeholt)} zurückgeholt`
+        : (e.sicherung || "")],
+    ];
+    zellen.forEach(([spalte, text], i) => {
+      const td = el("td", i === 0 ? "zeit" : null, text);
+      td.dataset.spalte = spalte;
+      tr.appendChild(td);
+    });
     tbody.appendChild(tr);
   });
   if (!eintraege.length) {
@@ -720,10 +806,34 @@ function rendernProtokoll(eintraege) {
   }
 }
 
+function anzahl(links, bereiche) {
+  const l = links || 0;
+  const b = bereiche || 0;
+  const teile = [l === 1 ? "1 Link" : `${l} Links`];
+  if (b) teile.push(b === 1 ? "1 Bereich" : `${b} Bereiche`);
+  return teile.join(", ");
+}
+
+// links.2026-10-30-173000.json -> 30.10. 17:30
+function zeitAusSicherung(name) {
+  const m = String(name).match(/(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})/);
+  if (!m) return name;
+  return `${m[3]}.${m[2]}. ${m[4]}:${m[5]}`;
+}
+
+function zeitKurzOhneJahr(iso) {
+  const m = String(iso || "").match(ZEIT_MUSTER);
+  if (!m) return iso || "";
+  return `${m[3]}.${m[2]}. ${m[4]}:${m[5]}`;
+}
+
+// 2026-10-30T12:34:56 (Protokoll) oder 2026-10-30-123456 (Sicherung)
+const ZEIT_MUSTER = /(\d{4})-(\d{2})-(\d{2})[T-](\d{2}):?(\d{2})/;
+
 function zeitKurz(iso) {
   if (!iso) return "";
-  // 2026-10-30T12:34:56 -> 30.10.12:34
-  const m = iso.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  // -> 30.10.2026 12:34
+  const m = String(iso).match(ZEIT_MUSTER);
   if (!m) return iso;
   return `${m[3]}.${m[2]}.${m[1]} ${m[4]}:${m[5]}`;
 }
@@ -735,19 +845,18 @@ function rendernSicherungen(liste) {
   if (!container) return;
   while (container.firstChild) container.removeChild(container.firstChild);
   liste.forEach((s) => {
-    const el = document.createElement("div");
-    el.className = "eintrag";
-    el.appendChild(el("span", "zeit", zeitKurz(s.zeit)));
-    el.appendChild(el("span", "name-person", s.name_person || "–"));
+    const zeile = el("div", "eintrag");
+    zeile.appendChild(el("span", "zeit", zeitKurz(s.zeit)));
+    zeile.appendChild(el("span", "name-person", s.name_person || "–"));
     const handlung = el("div", "handlung");
     const zurueckholen = el("button", "btn klein");
     zurueckholen.type = "button";
     zurueckholen.textContent = "Diesen Stand zurückholen";
     zurueckholen.dataset.namen = s.name;
     handlung.appendChild(zurueckholen);
-    el.appendChild(handlung);
-    el.querySelector("button").addEventListener("click", async () => {
-      const text = `Stand von ${zeitKurz(s.zeit)} zurückholen? Nicht gespeicherte Änderungen gehen verloren.`;
+    zeile.appendChild(handlung);
+    zeile.querySelector("button").addEventListener("click", async () => {
+      const text = `Stand von ${zeitKurzOhneJahr(s.zeit)} zurückholen? Nicht gespeicherte Änderungen gehen verloren.`;
       if (!confirm(text)) return;
       const name = $("#name").value.trim();
       if (!name || name.length < 1 || name.length > 40) {
@@ -766,13 +875,12 @@ function rendernSicherungen(liste) {
         meldung($("#speichern-meldung"), fehler.message, "fehler");
       }
     });
-    container.appendChild(el);
+    container.appendChild(zeile);
   });
   if (!liste.length) {
-    const el = document.createElement("div");
-    el.className = "eintrag";
-    el.appendChild(el("span", "name-person", "Noch keine Sicherungen."));
-    container.appendChild(el);
+    const leer = el("div", "eintrag");
+    leer.appendChild(el("span", "name-person", "Noch keine Sicherungen."));
+    container.appendChild(leer);
   }
 }
 
@@ -794,7 +902,7 @@ async function speichern() {
     ungespeichert = false;
     speicherStatus();
     meldung($("#speichern-meldung"), `Gespeichert (Stand: ${antwort.stand}).`, "ok");
-    localStorage.setItem("wmc_admin_name", name);
+    speicherSchreiben(localStorage, NAME_SCHLUESSEL, name);
     await protokollLaden();
     await sicherungenLaden();
   } catch (fehler) {
@@ -815,9 +923,9 @@ function beendenPruefen(e) {
 
 function init() {
   // Name vorbelegen (L-10).
-  const speichern = localStorage.getItem("wmc_admin_name");
-  if (speichern) {
-    $("#name").value = speichern;
+  const gespeicherterName = speicherLesen(localStorage, NAME_SCHLUESSEL);
+  if (gespeicherterName) {
+    $("#name").value = gespeicherterName;
   }
 
   // Anmeldung.
@@ -834,14 +942,26 @@ function init() {
     hilfeSpeichern();
   });
 
+  // Bereich anlegen (L-07).
+  $("#bereich-hinzufuegen").addEventListener("click", bereichAnlegen);
+
+  // Hilfe-Link: beim Verlassen jedes Feldes prüfen (V-06, V-08).
+  $("#hilfe-name").addEventListener("blur", (e) =>
+    meldung($("#hilfe-name-meldung"), pruefen_name(e.target.value), "fehler"));
+  $("#hilfe-adresse").addEventListener("blur", (e) =>
+    meldung($("#hilfe-adresse-meldung"), pruefen_adresse(e.target.value), "fehler"));
+
   // Verlassen der Seite (L-10).
   window.addEventListener("beforeunload", beendenPruefen);
 
-  // Prüfen, ob bereits eine Sitzung besteht.
+  // Prüfen, ob bereits eine Sitzung besteht. Ohne den Token aus der Anmeldung
+  // könnte die Seite nicht speichern (L-13); dann neu anmelden.
   (async () => {
+    const csrf = speicherLesen(sessionStorage, CSRF_SCHLUESSEL);
     try {
+      if (!csrf) throw new Error("Kein Token");
+      sitzung = { csrf };
       await api("liste");
-      sitzung = { csrf: "existiert" };
       version = 0;
       await laden();
       $("#anmeldung").hidden = true;
@@ -849,6 +969,7 @@ function init() {
       status("Angemeldet");
     } catch {
       // Keine Sitzung: Anmeldung zeigen.
+      sitzung = null;
       $("#anmeldung").hidden = false;
       $("#uebersicht").hidden = true;
     }
