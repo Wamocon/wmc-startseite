@@ -258,6 +258,14 @@ class handler(BaseHTTPRequestHandler):
 
     # ---- Schreiben --------------------------------------------------------------
 
+    @staticmethod
+    def _liste_oder_leer(z) -> dict:
+        """Die Liste vor dem Schreiben, für die Zählung im Protokoll (L-12)."""
+        try:
+            return kern.liste_lesen(z.daten_pfad)
+        except (OSError, json.JSONDecodeError):
+            return {}
+
     def _speichern(self):
         z = self._z()
         token = self._erfordert_sitzung()
@@ -315,6 +323,7 @@ class handler(BaseHTTPRequestHandler):
 
         # L-10: Sicherung, atomares Schreiben, Protokoll.
         with z._lock:
+            zaehlung = kern.aenderungen_zaehlen(self._liste_oder_leer(z), daten)
             new_version = z.version_erhoehen()
             try:
                 sicherung_name = kern.sicherung_legen(z.daten_pfad, z.sicherungen_pfad)
@@ -334,11 +343,7 @@ class handler(BaseHTTPRequestHandler):
                 "name": name.strip(),
                 "version": new_version,
                 "sicherung": sicherung_name,
-                "links_neu": 0,
-                "links_geaendert": 0,
-                "links_geloesch": 0,
-                "bereiche_neu": 0,
-                "bereiche_geloesch": 0,
+                **zaehlung,
             })
             z.sicherung_melden(sicherung_name, zeit, new_version, name.strip())
         self._antworten(HTTPStatus.OK, {
@@ -409,6 +414,7 @@ class handler(BaseHTTPRequestHandler):
         daten = dict(daten)
         daten["stand"] = kern.stand_heute()
         with z._lock:
+            zaehlung = kern.aenderungen_zaehlen(self._liste_oder_leer(z), daten)
             new_version = z.version_erhoehen()
             try:
                 neue_sicherung = kern.sicherung_legen(z.daten_pfad, z.sicherungen_pfad)
@@ -429,6 +435,7 @@ class handler(BaseHTTPRequestHandler):
                 "version": new_version,
                 "sicherung": neue_sicherung,
                 "zurueckgeholt": sicherung_name,
+                **zaehlung,
             })
             z.sicherung_melden(neue_sicherung, zeit, new_version, name.strip())
         self._antworten(HTTPStatus.OK, {

@@ -280,8 +280,51 @@ def sicherungen_auflisten(verzeichnis: str, protokoll_pfad: str,
 
 # ---- Versionskonflikt (L-11) --------------------------------------------------------
 
+def aenderungen_zaehlen(alt: dict, neu: dict) -> dict:
+    """Zählt neue, geänderte und gelöschte Links und Bereiche (L-12).
+
+    Grundlage sind die IDs, die sich nie ändern (L-04, L-07). Ein Link gilt als
+    geändert, wenn sich eines seiner Felder oder sein Bereich geändert hat; ein
+    Bereich, wenn sich Titel oder Marke geändert haben.
+    """
+    def bereiche(liste):
+        return {b.get("id"): b for b in (liste or {}).get("bereiche", [])
+                if isinstance(b, dict)}
+
+    def links(liste):
+        gefunden = {}
+        for b in bereiche(liste).values():
+            for link in b.get("links", []):
+                if isinstance(link, dict):
+                    gefunden[link.get("id")] = (b.get("id"), link)
+        return gefunden
+
+    bereiche_alt, bereiche_neu = bereiche(alt), bereiche(neu)
+    links_alt, links_neu = links(alt), links(neu)
+
+    def kopf(b):
+        return (b.get("titel"), b.get("marke"))
+
+    return {
+        "links_neu": len(links_neu.keys() - links_alt.keys()),
+        "links_geaendert": sum(1 for i in links_neu.keys() & links_alt.keys()
+                               if links_neu[i] != links_alt[i]),
+        "links_geloesch": len(links_alt.keys() - links_neu.keys()),
+        "bereiche_neu": len(bereiche_neu.keys() - bereiche_alt.keys()),
+        "bereiche_geaendert": sum(1 for i in bereiche_neu.keys() & bereiche_alt.keys()
+                                  if kopf(bereiche_neu[i]) != kopf(bereiche_alt[i])),
+        "bereiche_geloesch": len(bereiche_alt.keys() - bereiche_neu.keys()),
+    }
+
+
 def fehlermeldung_versionskonflikt(name_fremd: str, zeit_fremd: str) -> str:
-    """L-11: Die Meldung, wenn die Versionsnummer nicht passt."""
+    """L-11: Die Meldung, wenn die Versionsnummer nicht passt.
+
+    Die Zeit kommt aus dem Protokoll (2026-10-30T12:34:56); gezeigt wird HH:MM.
+    """
+    treffer = re.search(r"T(\d{2}):(\d{2})", zeit_fremd or "")
+    if treffer:
+        zeit_fremd = f"{treffer.group(1)}:{treffer.group(2)}"
     return (
         f"Inzwischen hat {name_fremd} um {zeit_fremd} gespeichert. "
         "Bitte neu laden; Ihre Änderungen gehen dabei verloren."
