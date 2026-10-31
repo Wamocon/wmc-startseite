@@ -81,6 +81,26 @@ class TestAdminFelder(unittest.TestCase):
             f"admin.js verwendet Hilfe-Felder, die im Schema fehlen: {fehlende_hilfe}",
         )
 
+    def test_keine_lokale_variable_verdeckt_eine_funktion(self):
+        """Kein const, let, var oder Parameter heißt wie eine Funktion von admin.js.
+
+        Am 30.10. verdeckte `const el = …` den Helfer el(), und `const speichern`
+        in init() die Funktion speichern(); beides fanden erst die Browser-Tests.
+        """
+        js = admin_js_lesen()
+        funktionen = set(re.findall(r"^(?:async\s+)?function\s+(\w+|\$)\s*\(", js, re.M))
+        self.assertIn("el", funktionen)
+        self.assertIn("speichern", funktionen)
+        variablen = set(re.findall(r"(?:const|let|var)\s+(\w+|\$)", js))
+        parameter = set()
+        for liste in re.findall(r"function\s+\w+\s*\(([^)]*)\)", js):
+            for teil in liste.split(","):
+                name = teil.split("=")[0].strip().strip("{} ")
+                if name:
+                    parameter.add(name)
+        verdeckt = (variablen | parameter) & funktionen
+        self.assertEqual(verdeckt, set(), f"Lokale Namen verdecken Funktionen: {verdeckt}")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -11,6 +11,7 @@ admin/test_dienst.py` ausführbar ist.
 """
 
 import json
+import unittest
 import os
 import sys
 import tempfile
@@ -20,7 +21,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "admin"))
 import kern  # noqa: E402
 
 
-class TestKern:
+class TestKern(unittest.TestCase):
     def test_passwort_hash_und_pruefen(self):
         salz = b"0123456789abcdef"
         hashwert = kern.hashen("geheim", salz)
@@ -90,6 +91,10 @@ class TestKern:
             heute = kern.stand_heute()
             import re
             self.assertTrue(re.match(r"^\d{4}-\d{2}-\d{2}$", heute))
+
+    def test_fehlermeldung_versionskonflikt_zeigt_uhrzeit(self):
+        meldung = kern.fehlermeldung_versionskonflikt("Erwin", "2026-10-30T12:34:56")
+        self.assertIn("Inzwischen hat Erwin um 12:34 gespeichert.", meldung)
 
     def test_fehlermeldung_versionskonflikt(self):
         meldung = kern.fehlermeldung_versionskonflikt("Erwin", "30.10. 12:34")
