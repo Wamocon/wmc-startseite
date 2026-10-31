@@ -39,7 +39,7 @@ NAME_MAX = 40
 ID_MUSTER = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 NAEM_ZU_ID = re.compile(r"[^a-z0-9]+")
 SICHERUNG_MUSTER = re.compile(
-    r"^links\.(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})(\d{2})\.json$"
+    r"^links\.(\d{4})-(\d{2})-(\d{2})-(\d{2})(\d{2})(\d{2})(?:-\d{1,3})?\.json$"
 )
 
 COOKIE_NAME = "wmc_admin_sitzung"
@@ -129,7 +129,8 @@ def stand_heute() -> str:
 # ---- Sicherung (L-10) ---------------------------------------------------------
 
 def sicherung_name_ist_gueltig(name: str) -> bool:
-    """L-15: Nur Namen der Form links.JJJJ-MM-TT-HHMMSS.json."""
+    """L-15: Nur Namen der Form links.JJJJ-MM-TT-HHMMSS.json, bei mehreren
+    Sicherungen in derselben Sekunde mit -2, -3 … vor .json."""
     m = SICHERUNG_MUSTER.match(name)
     if not m:
         return False
@@ -144,18 +145,27 @@ def sicherung_name_ist_gueltig(name: str) -> bool:
 
 
 def sicherung_legen(alt_datei_pfad: str, ziel_verzeichnis: str) -> str:
-    """Legt eine Sicherung links.JJJJ-MM-TT-HHMMSS.json an (L-10)."""
+    """Legt eine Sicherung links.JJJJ-MM-TT-HHMMSS.json an (L-10).
+
+    Gibt es den Namen schon, weil in derselben Sekunde gespeichert wurde,
+    bekommt die neue Sicherung -2, -3 … angehängt; keine wird überschrieben.
+    """
     zeit = time.localtime()
-    name = "links.%04d-%02d-%02d-%02d%02d%02d.json" % (
+    stamm = "links.%04d-%02d-%02d-%02d%02d%02d" % (
         zeit.tm_year, zeit.tm_mon, zeit.tm_mday,
         zeit.tm_hour, zeit.tm_min, zeit.tm_sec,
     )
-    ziel_pfad = os.path.join(ziel_verzeichnis, name)
     with open(alt_datei_pfad, "r", encoding="utf-8") as quelle:
         inhalt = quelle.read()
-    with open(ziel_pfad, "w", encoding="utf-8") as ziel:
-        ziel.write(inhalt)
-    return name
+    zaehler = 1
+    while True:
+        name = stamm + (".json" if zaehler == 1 else "-%d.json" % zaehler)
+        try:
+            with open(os.path.join(ziel_verzeichnis, name), "x", encoding="utf-8") as ziel:
+                ziel.write(inhalt)
+            return name
+        except FileExistsError:
+            zaehler += 1
 
 
 def sicherung_laden(verzeichnis: str, name: str) -> dict:
@@ -245,7 +255,11 @@ def sicherungen_auflisten(verzeichnis: str, protokoll_pfad: str,
             names.append(name)
 
     def schluessel(name: str):
-        return name[len("links."):-len(".json")]
+        # links.2026-10-30-123456-2.json kommt nach links.2026-10-30-123456.json
+        stueck = name[len("links."):-len(".json")]
+        teile = stueck.split("-")
+        folge = int(teile[4]) if len(teile) > 4 and teile[4].isdigit() else 1
+        return ("-".join(teile[:4]), folge)
 
     names.sort(key=schluessel, reverse=True)
     names = names[:anzahl]
@@ -265,7 +279,7 @@ def sicherungen_auflisten(verzeichnis: str, protokoll_pfad: str,
     ergebnis = []
     for name in names:
         personen_name = ""
-        for eintrag in eintraege:
+        for eintrag in reversed(eintraege):
             if eintrag.get("sicherung") == name:
                 personen_name = eintrag.get("name", "")
                 break

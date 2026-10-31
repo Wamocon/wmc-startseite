@@ -52,6 +52,7 @@ class TestKern(unittest.TestCase):
 
     def test_sicherung_name_gueltig(self):
         self.assertTrue(kern.sicherung_name_ist_gueltig("links.2026-10-30-123456.json"))
+        self.assertTrue(kern.sicherung_name_ist_gueltig("links.2026-10-30-123456-2.json"))
         self.assertFalse(kern.sicherung_name_ist_gueltig("links.2026-13-40-123456.json"))
         self.assertFalse(kern.sicherung_name_ist_gueltig("foo.json"))
         self.assertFalse(kern.sicherung_name_ist_gueltig("links.2026-10-30-250000.json"))

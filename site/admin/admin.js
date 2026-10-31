@@ -44,9 +44,12 @@ function status(text, klasse = "") {
 }
 
 function meldung(ziel, text, klasse = "") {
+  // Die Klasse nur mit Text: Eine leere Meldung darf das Formular nicht
+  // verschieben, sonst trifft der Klick nach dem Verlassen eines Feldes
+  // den Button nicht mehr.
   if (ziel) {
     ziel.textContent = text;
-    ziel.className = "meldung " + klasse;
+    ziel.className = text && klasse ? "meldung " + klasse : "meldung";
   }
 }
 
