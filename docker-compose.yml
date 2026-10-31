@@ -35,8 +35,8 @@ services:
     command: python3 admin/dienst.py --adresse 0.0.0.0 --port 8081
       --daten /srv/startseite/daten
       --sicherungen /srv/startseite/sicherungen
-      --protokoll /srv/startseite/protokoll.jsonl
-      --passwort /srv/startseite/passwort.json
+      --protokoll /srv/startseite/protokoll/protokoll.jsonl
+      --passwort /srv/startseite/passwort/passwort.json
       --sperre 600
     volumes:
       - ./admin:/srv/startseite/admin:ro
