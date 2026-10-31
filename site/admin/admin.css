@@ -2,7 +2,23 @@
    Farben und Schriften bleiben identisch (CI). */
 
 :root {
+  /* Namen dieser Datei, abgebildet auf die Farben aus site/styles.css (CI). */
+  --akzent: var(--rot-text);
+  --akzent-aktiv: var(--rot-dunkel);
+  --akzent-weich: var(--academy-flaeche);
+  --text-schwach: var(--sekundaer);
+  --rand: var(--linie-element);
+  --feld-hintergrund: var(--flaeche);
+  --oberflaeche: var(--flaeche-grau);
+  --marke-text: var(--rot-dunkel);
+  --marke-hintergrund: var(--academy-flaeche);
+  --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
   --admin-gruen: var(--akzent);
+}
+
+/* „hidden“ gilt auch dort, wo eine Regel unten display setzt (Anmeldung, Übersicht). */
+[hidden] {
+  display: none !important;
 }
 
 .admin {
@@ -469,6 +485,34 @@
 .tabelle td.zeit {
   font-family: var(--mono, monospace);
   color: var(--text-schwach);
+}
+
+.tabelle td {
+  overflow-wrap: anywhere;
+}
+
+/* Schmale Bildschirme: jede Zeile als Block, Spaltennamen vor dem Wert (N-04). */
+@media (max-width: 600px) {
+  .tabelle thead {
+    display: none;
+  }
+  .tabelle, .tabelle tbody, .tabelle tr, .tabelle td {
+    display: block;
+    width: 100%;
+  }
+  .tabelle tr {
+    border-bottom: 1px solid var(--rand);
+    padding: 8px 0;
+  }
+  .tabelle td {
+    border-bottom: 0;
+    padding: 2px 0;
+  }
+  .tabelle td[data-spalte]::before {
+    content: attr(data-spalte) ": ";
+    color: var(--text-schwach);
+    font-weight: 600;
+  }
 }
 
 /* ---- Hilfe-Formular -------------------------------------------------------- */
