@@ -686,11 +686,13 @@ h3 {
   color: var(--sekundaer);
 }
 
-.fuss a {
+.fuss a,
+.fuss-admin {
   color: var(--rot-text);
 }
 
-.fuss a:hover {
+.fuss a:hover,
+.fuss-admin:hover {
   color: var(--rot-dunkel);
 }
 

@@ -11,7 +11,9 @@ Gemeinsame Startseite für die Browser der WAMOCON GmbH (WMC) und der WAMOCON Ac
 | `schema/links.schema.json` | Format der Linkliste |
 | `daten/beispiel/links.json` | Beispiel-Linkliste mit Platzhalter-Links |
 | `daten/beispiel/sprueche.json` | Beispiel-Sprüche für die Begrüßung |
-| `nginx/`, `Dockerfile`, `docker-compose.yml` | Betrieb im Container |
+| `site/admin/` | Admin-Ansicht zum Pflegen der Links (A-0104): `index.html`, `admin.js`, `admin.css` |
+| `admin/` | Dienst zum Speichern der Linkliste (B-05): `dienst.py`, `kern.py`, `passwort_setzen.py` |
+| `nginx/`, `Dockerfile`, `docker-compose.yml` | Betrieb im Container (Startseite + admin-Dienst) |
 | `docs/` | Auftrag, Anforderungen, Gestaltung, Übergabe |
 
 Die echte Linkliste liegt nur auf dem Server und nie in diesem Repo.
@@ -40,7 +42,21 @@ Die Seite ist dann unter `http://localhost:8080/` erreichbar. Der Container füh
 
 ## Links pflegen
 
-Die IT pflegt die Links in einer JSON-Datei auf dem Server (Format: `schema/links.schema.json`). Nach einer Änderung:
+Die IT pflegt die Links in einer JSON-Datei auf dem Server (Format: `schema/links.schema.json`). Zwei Wege:
+
+### Über die Admin-Ansicht (A-0104)
+
+Unter `/admin` derselben Adresse wie die Startseite. In der Fußzeile der Startseite steht der Link „Links pflegen“. Nach der Anmeldung lassen sich Links und Bereiche anlegen, ändern, löschen, sortieren; Standardfavoriten und Hilfe-Link setzen; mit Namen speichern; eine Sicherung zurückholen.
+
+Vor der ersten Anmeldung setzt die IT das gemeinsame Passwort:
+
+```
+python3 admin/passwort_setzen.py /pfad/zu/passwort.json
+```
+
+Der Dienst legt beim Speichern automatisch eine Sicherung in `sicherungen/` an und schreibt eine Zeile in `protokoll.jsonl`. Die letzten 20 Einträge und die letzten 20 Sicherungen zeigt die Ansicht unter dem Protokoll.
+
+### Direkt in der Datei
 
 1. Die Datei prüfen: `python3 scripts/pruefe_links.py PFAD/ZUR/links.json`
 2. Gilt das Dateiverzeichnis als `LINKS_VERZEICHNIS` eingebunden, ist die Änderung beim nächsten Öffnen in allen Browsern sichtbar — kein Neustart des Containers nötig.
@@ -64,7 +80,7 @@ Fehlt die Datei oder ist sie ungültig, bleibt der Spruch-Absatz verborgen; die 
 
 ## Tests ausführen
 
-Unit-Tests für die Prüfskripte (alle Regeln V-02 bis V-09 und V-11 bis V-15):
+Unit-Tests für die Prüfskripte (alle Regeln V-02 bis V-09 und V-11 bis V-15) und für den admin-Dienst (A-0104):
 
 ```
 python3 -m unittest discover -s tests
