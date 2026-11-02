@@ -215,3 +215,31 @@ Erwin am 31.10.2026: Die Werkbank bessert selbst nach und prüft im Browser. Gep
 | `tests/test_kern.py` erbte nicht von `unittest.TestCase`; seine Tests liefen nie | Klasse erbt von `unittest.TestCase` | `python3 -m unittest discover -s tests`: 12 Tests aus `test_kern.py` laufen |
 
 Bekannt und nicht geändert: Ein neuer Bereich braucht mindestens einen Link, bevor die Liste gespeichert werden kann, weil das Schema leere Bereiche nicht zulässt; die Seite sagt das beim Anlegen.
+
+## Neue Pflegeansicht der Werkbank am 02.11.2026
+
+Erwin am 02.11.2026: Das Formular sei nicht zeitgemäß und die Pflege anstrengend. Die Werkbank hat `site/admin/` neu gebaut, im Labor gezeigt, Erwin hat sie freigegeben („Freigegeben“). Der Dienst `admin/` und das Schema sind unverändert. Die geänderten Kriterien stehen in der Notiz A-0105 im Abschnitt „Neue Pflegeansicht“.
+
+| Vorher | Jetzt | Betrifft |
+|---|---|---|
+| Formular unter der Liste, Fokus blieb beim Button | Bearbeiten in der Zeile, Fokus im Namen, Enter übernimmt, Esc bricht ab, „Anlegen und weiter“ hält die nächste Zeile bereit | L-04 |
+| „Löschen“ fragte im Browserfenster nach | Löschen sofort, Hinweis mit „Rückgängig“; geschrieben wird erst mit „Speichern“ | L-05 |
+| Knöpfe „Nach oben“ und „Nach unten“ | Griff zum Ziehen und Pfeiltasten, am Rand in den Nachbarbereich; ohne Maus (`hover: none`) wieder Knöpfe | L-06, L-08 |
+| Titel und Marke per Browserfenster | Titel im Kopf des Bereichs, Marke als Auswahl; „Bereich anlegen“ als Formular, öffnet die Zeile für den ersten Link | L-07 |
+| Favoriten als eigene Liste am Seitenende | Stern in der Zeile, Einträge oben mit Zahl | L-08 |
+| Protokoll, Sicherungen und Hilfe-Link unter der Liste | Reiter „Verlauf“ und „Hilfe-Link“ | L-09, L-12, L-15 |
+| „Speichern“ scrollte weg | Leiste bleibt stehen; Speichern ohne Änderung gesperrt; „Rückgängig“, Strg+S, Strg+Z | L-10 |
+| Nachfrage beim Zurückholen im Browserfenster | Eigenes Fenster, „Abbrechen“ vorgewählt | L-15 |
+| Abgelaufene Sitzung und Abmelden verwarfen Änderungen | Sitzung: wieder anmelden, Änderungen bleiben; Abmelden fragt nach | L-02, L-10 |
+
+Gemessen mit 13 Links in 5 Bereichen bei 1280 px: Seite 1 526 statt 3 896 Pixel, Zeile 50 statt 99 Pixel.
+
+Beim Durchspielen gefunden und behoben:
+
+| Fehler | Behoben | Nachweis |
+|---|---|---|
+| Strg+S verlor, was noch im Feld stand; Titel und Hilfe-Link kommen erst beim Verlassen des Feldes in die Liste | `speichern()` übernimmt das Feld vorher, Speichern ist schon beim Tippen frei | Fall „L-10 Strg+S speichert auch, was noch im Feld steht“ |
+| Ein Titel zeichnete beim Verlassen die Liste neu; der Klick oder Tab, der das Feld verließ, traf einen Knopf, den es nicht mehr gab | Titel und Marke ändern die Liste, ohne neu zu zeichnen | Fälle „L-10 Klick nach einer Titeländerung geht nicht verloren“, „L-07 Bereich umbenennen“ |
+| Ein ungültiger Hilfe-Link wurde still übergangen, beim nächsten Zeichnen überschrieben | Eingabe und Meldung bleiben stehen, „Speichern“ springt dorthin | Fall „L-09 Hilfe-Link: Ungültige Adresse verhindert das Speichern“ |
+| Eine Prüfung in der offenen Zeile scheiterte stumm, wenn gerade ein anderer Reiter offen war | Der Reiter „Links“ wird gezeigt | `editorAnwenden()` |
+| Ohne Maus ließen sich Bereiche und Favoriten nicht sortieren, unter 900 px fehlte die Adresse in der Zeile (L-03, L-06, L-08) | Knöpfe `bereich-nach-oben`, `bereich-nach-unten`, `fav-nach-vorn`; Adresse bleibt sichtbar, unter 600 px in eigener Zeile | Fälle „L-14 Ohne Maus: Knöpfe zum Sortieren bei Berührung“, „L-14 Bei 360 px …“ |
