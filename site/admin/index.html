@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Links pflegen · Startseite</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="admin">
+  <noscript>
+    <div class="ohne-js" role="alert">
+      Diese Ansicht braucht JavaScript.
+    </div>
+  </noscript>
+
+  <header class="kopf">
+    <div class="kopf-innen">
+      <a class="kopf-logos" href="/" aria-label="Zur Startseite">
+        <img class="logo-wmc" src="/assets/logo-wmc.png" alt="">
+        <span class="kopf-trenner" aria-hidden="true"></span>
+        <img class="logo-wma" src="/assets/logo-wma.png" alt="">
+      </a>
+      <h1>Links pflegen</h1>
+    </div>
+  </header>
+
+  <main class="pflege">
+    <section id="anmeldung" class="anmeldung" aria-labelledby="anmeldung-titel">
+      <h2 id="anmeldung-titel">Anmelden</h2>
+      <form id="anmeldeformular" novalidate>
+        <label for="passwort">Passwort</label>
+        <input id="passwort" name="passwort" type="password"
+               autocomplete="current-password" required>
+        <div class="meldung" id="anmeldung-meldung" role="alert"></div>
+        <div class="handlung">
+          <button type="submit" class="btn btn-haupt">Anmelden</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="uebersicht" class="uebersicht" hidden>
+      <div class="leiste">
+        <div class="leiste-innen">
+          <div class="reiter" role="tablist" aria-label="Ansichten">
+            <button type="button" role="tab" id="reiter-links" aria-controls="tafel-links" aria-selected="true">Links</button>
+            <button type="button" role="tab" id="reiter-verlauf" aria-controls="tafel-verlauf" aria-selected="false" tabindex="-1">Verlauf</button>
+            <button type="button" role="tab" id="reiter-hilfe" aria-controls="tafel-hilfe" aria-selected="false" tabindex="-1">Hilfe-Link</button>
+          </div>
+          <div class="leiste-handlung">
+            <span class="status" id="status" role="status"></span>
+            <button type="button" id="rueckgaengig" class="btn" disabled>Rückgängig</button>
+            <label class="visuell-versteckt" for="name">Ihr Name</label>
+            <input id="name" name="name" type="text" maxlength="40" placeholder="Ihr Name" autocomplete="off">
+            <button type="button" id="speichern" class="btn btn-haupt" disabled>Speichern</button>
+            <button type="button" id="abmelden" class="btn">Abmelden</button>
+          </div>
+        </div>
+        <div class="leiste-meldung">
+          <div class="meldung" id="speichern-meldung" role="alert"></div>
+        </div>
+      </div>
+
+      <div id="tafel-links" class="tafel" role="tabpanel" aria-labelledby="reiter-links">
+        <div class="werkzeuge">
+          <div class="filter">
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+            <input id="filter" type="search" placeholder="Name, Beschreibung oder Adresse suchen" aria-label="Links durchsuchen" autocomplete="off" spellcheck="false">
+          </div>
+          <button type="button" id="bereich-hinzufuegen" class="btn">Bereich anlegen</button>
+        </div>
+
+        <section class="favoriten" aria-labelledby="favoriten-titel">
+          <h2 id="favoriten-titel">Standardfavoriten</h2>
+          <span id="favoriten-zahl" class="hinweis"></span>
+          <ul id="favoriten" class="favoriten-liste"></ul>
+        </section>
+
+        <p id="kein-treffer" class="hinweis" hidden></p>
+        <div id="bereiche" class="bereiche"></div>
+
+        <form id="bereich-neu" class="bereich-neu" novalidate hidden>
+          <div class="feld">
+            <label for="neu-titel">Titel des Bereichs</label>
+            <input id="neu-titel" type="text" maxlength="40" autocomplete="off">
+            <div class="meldung" id="neu-titel-meldung"></div>
+          </div>
+          <div class="feld">
+            <label for="neu-marke">Marke</label>
+            <select id="neu-marke">
+              <option value="wmc">WMC</option>
+              <option value="wma">WMA</option>
+              <option value="beide">WMC · WMA</option>
+            </select>
+          </div>
+          <div class="handlung">
+            <button type="button" id="neu-abbrechen" class="btn">Abbrechen</button>
+            <button type="submit" class="btn btn-haupt">Anlegen</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="tafel-verlauf" class="tafel" role="tabpanel" aria-labelledby="reiter-verlauf" hidden>
+        <section class="abschnitt protokoll" aria-labelledby="protokoll-titel">
+          <h2 id="protokoll-titel">Protokoll</h2>
+          <p class="hinweis">Die letzten 20 Änderungen.</p>
+          <table class="tabelle">
+            <thead>
+              <tr>
+                <th scope="col">Zeit</th>
+                <th scope="col">Name</th>
+                <th scope="col">Neu</th>
+                <th scope="col">Geändert</th>
+                <th scope="col">Gelöscht</th>
+                <th scope="col">Sicherung</th>
+              </tr>
+            </thead>
+            <tbody id="protokoll-zeilen"></tbody>
+          </table>
+        </section>
+
+        <section class="abschnitt sicherungen" aria-labelledby="sicherungen-titel">
+          <h2 id="sicherungen-titel">Sicherungen</h2>
+          <p class="hinweis">Die letzten 20 Stände. Vor dem Zurückholen wird der aktuelle Stand gesichert.</p>
+          <ul id="sicherungen" class="sicherungen-liste"></ul>
+        </section>
+      </div>
+
+      <div id="tafel-hilfe" class="tafel" role="tabpanel" aria-labelledby="reiter-hilfe" hidden>
+        <section class="abschnitt hilfe" aria-labelledby="hilfe-titel">
+          <h2 id="hilfe-titel">Hilfe-Link</h2>
+          <p class="hinweis">Steht auf der Startseite unten und bei „Kein Treffer“.</p>
+          <form id="hilfeformular" novalidate>
+            <div class="feld">
+              <label for="hilfe-name">Name</label>
+              <input id="hilfe-name" name="hilfe-name" type="text" maxlength="40" autocomplete="off">
+              <div class="meldung" id="hilfe-name-meldung"></div>
+            </div>
+            <div class="feld">
+              <label for="hilfe-adresse">Adresse</label>
+              <input id="hilfe-adresse" name="hilfe-adresse" type="text" maxlength="500" autocomplete="off" spellcheck="false">
+              <div class="meldung" id="hilfe-adresse-meldung"></div>
+            </div>
+          </form>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer class="fuss">
+    <div class="fuss-innen">
+      <p class="fuss-text">Wamocon – interne Startseite</p>
+      <p class="fuss-rechts"><a href="/">Zur Startseite</a></p>
+    </div>
+  </footer>
+
+  <div id="hinweis" class="hinweis-band" role="status" hidden>
+    <span id="hinweis-text"></span>
+    <button type="button" id="hinweis-rueckgaengig" class="btn-text">Rückgängig</button>
+  </div>
+  <div id="ansage" class="visuell-versteckt" aria-live="polite"></div>
+
+  <dialog id="nachfrage" aria-labelledby="nachfrage-text">
+    <p id="nachfrage-text"></p>
+    <div class="handlung">
+      <button type="button" id="nachfrage-nein" class="btn">Abbrechen</button>
+      <button type="button" id="nachfrage-ja" class="btn btn-haupt">Zurückholen</button>
+    </div>
+  </dialog>
+
+  <script src="/admin/admin.js" type="module"></script>
+</body>
+</html>
