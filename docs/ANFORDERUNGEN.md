@@ -1,10 +1,12 @@
 # Anforderungen: Browser-Startseite WMC & WMA
 
-Stand 28.10.2026 · Jira WMCNL-2781 · Gestaltung: [DESIGN.md](DESIGN.md)
+Stand 03.11.2026 · Jira WMCNL-2781 · Gestaltung: [DESIGN.md](DESIGN.md)
 
 Am 28.10.2026 neu oder geändert (Erwin, Auftrag A-0100): F-02, F-11, F-12, F-13, F-14, F-50, V-11 bis V-15, T-01, B-01, B-03, B-04. Wo eine dieser Anforderungen Gestaltung nennt, gilt sie zusätzlich zu DESIGN.md.
 
 Am 29.10.2026 klarer gefasst (Erwin, Entscheidung vom 22.10.): F-04, Ziffern zählen im Kürzel mit, wie die Seite es seit dem 22.10. macht.
+
+Am 03.11.2026 ergänzt (Erwin): Abschnitt 12 Admin-Ansicht mit L-01 bis L-15, dazu B-05 und T-03. Freigegeben am 29.10.2026, bis dahin nur in den Aufträgen A-0104 und A-0105. Außer L-01 und L-13 stehen sie in der Fassung der neuen Pflegeansicht, die Erwin am 02.11.2026 freigegeben hat.
 
 Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den Stand. Texte in „Anführungszeichen“ sind wörtlich so zu übernehmen.
 
@@ -133,11 +135,15 @@ Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den 
 
 **B-04 README.** `README.md` erklärt kurz: lokal starten, mit Docker betreiben, Links pflegen (Datei ändern → Prüfskript → fertig, kein Neustart nötig) und die Tests ausführen. Die README erklärt auch, wie man die Sprüche pflegt.
 
+**B-05 Dienst zum Speichern.** Ein eigener Container aus `python:3.12-slim` mit einem Dienst nur aus der Standardbibliothek (`http.server`, `json`, `hashlib`, `hmac`, `secrets`). nginx leitet `/admin/api/` an ihn weiter und liefert `/admin` als statische Seite aus `site/admin/`. Nur dieser Container bindet `daten/` schreibend ein, dazu `sicherungen/`, `protokoll.jsonl` und die Passwortdatei. nginx liest `daten/` weiter nur (B-02). Der Container läuft mit `TZ: Europe/Berlin`.
+
 ## 10 Tests
 
 **T-01** Unit-Tests für `pruefe_links.py` in `tests/`, ausführbar mit `python3 -m unittest discover -s tests`, alle grün. Mindestens ein Test je Regel V-02 bis V-09. Unit-Tests auch für `pruefe_sprueche.py`, mindestens einer je Regel V-11 bis V-15.
 
 **T-02** Kurzer Nachweis in `docs/UEBERGABE.md`, dass die Seite im Browser funktioniert (welche Schritte du geprüft hast, mit welchem Ergebnis). Browser-Tests sind erlaubt, aber keine Pflicht.
+
+**T-03 Tests.** Unit-Tests für den Dienst unter `tests/`: Anmeldung, Sperre nach Fehlversuchen, Prüfung beim Speichern, Sicherung, atomares Schreiben, Versionskonflikt, Protokoll, CSRF, Zurückholen einer Sicherung. Alle grün mit `python3 -m unittest discover -s tests`.
 
 ## 11 Ablauf
 
@@ -148,3 +154,37 @@ Jede Anforderung hat eine ID. In `docs/UEBERGABE.md` meldest du zu jeder ID den 
 **P-03** Diese Dateien bleiben unverändert: `docs/AUFTRAG.md`, `docs/ANFORDERUNGEN.md`, `docs/DESIGN.md`, `docs/design/`, `schema/`, `daten/beispiel/links.json`, `site/assets/`, `AGENTS.md`, `CLAUDE.md`.
 
 **P-04** `docs/UEBERGABE.md` ist ausgefüllt: Stand jeder ID, Nachweis, Abweichungen, offene Fragen.
+
+## 12 Admin-Ansicht
+
+Alle anderen Anforderungen gelten auch hier, besonders F-03, N-01 bis N-05 und B-01 bis B-05.
+
+**L-01 Adresse.** Die Admin-Ansicht liegt unter `/admin` derselben Adresse wie die Startseite. In der Fußzeile der Startseite steht nach dem Text links ein Link „Links pflegen“ auf `/admin`.
+
+**L-02 Anmeldung.** Ohne gültige Sitzung zeigt `/admin` nur ein Formular mit dem Feld „Passwort“ und dem Button „Anmelden“. Es gibt ein gemeinsames Passwort. Es steht weder im Repository noch in der Seite, sondern als Hash (PBKDF2-SHA256 aus der Standardbibliothek, mindestens 200 000 Runden, eigenes Salz) in einer Datei auf dem Server außerhalb von `daten/`. Gesetzt wird es mit `python3 admin/passwort_setzen.py DATEI`, das es zweimal verdeckt abfragt. Nach der Anmeldung gilt eine Sitzung 8 Stunden als Cookie mit `HttpOnly` und `SameSite=Strict`. „Abmelden“ beendet sie; gibt es ungespeicherte Änderungen, fragt es vorher im eigenen Fenster: „Nicht gespeicherte Änderungen gehen beim Abmelden verloren. Trotzdem abmelden?“ Nach 5 falschen Passwörtern in 10 Minuten nimmt der Dienst so lange keine Anmeldung an, wie `--sperre` sagt (Voreinstellung 10 Minuten), und sagt das. Läuft die Sitzung ab, zeigt „Speichern“ die Anmeldung mit „Die Sitzung ist abgelaufen. Bitte wieder anmelden; Ihre Änderungen bleiben erhalten.“ Nach der Anmeldung sind die Änderungen noch da.
+
+**L-03 Übersicht.** Nach der Anmeldung zeigt die Ansicht alle Bereiche in der Reihenfolge der Datei, je Bereich Titel, Marke und die Links mit Kürzel, Name, Beschreibung und Adresse, je Link Symbole zum Ändern und Löschen, je Bereich „Link hinzufügen“. Unter 600 px steht die Adresse in eigener Zeile. Das Feld über der Liste filtert nach Name, Beschreibung, Adresse und Kürzel; beim Filtern sind die Griffe und „Link hinzufügen“ ausgeblendet.
+
+**L-04 Link anlegen und ändern.** Ein Formular mit den Feldern Bereich, Name, Beschreibung, Adresse und Kürzel (freiwillig). Es steht in der Zeile des Links, der Fokus im Namen; ein Klick auf die Zeile öffnet es. Enter übernimmt, Esc bricht ab. Bei einem neuen Link hält „Anlegen und weiter“ die nächste leere Zeile bereit. Die Regeln aus V-02, V-06 und V-08 prüft es beim Verlassen jedes Feldes und zeigt die Meldung unter dem Feld, auf Deutsch. Ein neuer Link bekommt seine ID aus dem Namen (Kleinbuchstaben, Ziffern, Bindestrich, eindeutig, sonst mit Ziffer am Ende). Die ID eines bestehenden Links ändert sich nie, auch nicht mit dem Namen, weil die Favoriten der Nutzer an ihr hängen (F-34). Wird der Bereich geändert, wandert der Link ans Ende des neuen Bereichs.
+
+**L-05 Link löschen.** Löschen fragt nicht nach. Der Link verschwindet aus der Liste, und ein Hinweis nennt ihn und bietet „Rückgängig“: „„NAME“ gelöscht.“, beim Standardfavoriten „„NAME“ gelöscht und aus den Standardfavoriten entfernt.“ In die Datei kommt das erst mit „Speichern“.
+
+**L-06 Reihenfolge.** Links und Bereiche lassen sich am Griff ziehen und mit den Pfeiltasten verschieben; am Rand eines Bereichs wechselt ein Link in den Nachbarbereich. Auf Geräten ohne Maus stehen statt des Griffs Symbole zum Verschieben nach oben und nach unten.
+
+**L-07 Bereiche.** Bereiche lassen sich anlegen (Titel, Marke), umbenennen und in der Marke ändern. Der Titel steht als Feld im Kopf des Bereichs und gilt beim Verlassen; ohne Titel bleibt der alte, und ein Hinweis sagt „Der Titel fehlt.“ Die Marke ist eine Auswahl aus WMC, WMA und WMC · WMA (`wmc`, `wma`, `beide`). „Bereich anlegen“ ist ein Formular und öffnet danach die Zeile für den ersten Link. Einen Bereich ohne Link nimmt „Speichern“ nicht an: „Der Bereich „TITEL“ braucht mindestens einen Link.“ Löschen geht nur bei einem leeren Bereich; sonst ist das Symbol gesperrt und sagt warum: „Der Bereich ist nicht leer.“ Die ID eines Bereichs ändert sich nie.
+
+**L-08 Standardfavoriten.** Eine Auswahl aus allen Links, höchstens fünf, in einer Reihenfolge. Der Stern in der Zeile nimmt einen Link auf oder heraus; beim sechsten sagt ein Hinweis „Höchstens 5 Standardfavoriten. Bitte erst einen entfernen.“ Die Reihenfolge ändert man durch Ziehen oder mit den Pfeiltasten, auf Geräten ohne Maus mit einem Symbol, das den Favoriten eine Stelle nach vorn setzt.
+
+**L-09 Hilfe-Link.** Name und Adresse für „Link fehlt?“ und die Fußzeile, mit den Regeln aus V-06 und V-08, im eigenen Reiter „Hilfe-Link“. Eine ungültige Eingabe bleibt mit Meldung stehen; „Speichern“ springt dorthin, sagt „Der Hilfe-Link stimmt noch nicht.“ und speichert nicht.
+
+**L-10 Speichern.** Änderungen sammeln sich, bis man „Speichern“ drückt; bis dahin steht oben „Nicht gespeicherte Änderungen“, sonst „Gespeichert“, und Verlassen der Seite fragt nach. „Speichern“ ist gesperrt, solange nichts geändert ist, und bleibt ab 600 px Breite beim Scrollen sichtbar. „Rückgängig“ und Strg+Z nehmen Schritt für Schritt zurück; in einem Feld gilt Strg+Z für den Text im Feld. Strg+S speichert auch, was noch im Feld steht. „Speichern“ verlangt das Feld „Ihr Name“ (1 bis 40 Zeichen, bleibt im Browser vorbelegt). Der Dienst setzt `stand` auf heute, prüft die ganze Liste mit den Regeln aus V-01 bis V-10, mit denselben Funktionen wie `scripts/pruefe_links.py`, und schreibt nur, wenn sie besteht. Vorher legt er eine Sicherung `links.JJJJ-MM-TT-HHMMSS.json` in einen Ordner `sicherungen/` neben `daten/`, in derselben Sekunde mit `-2`, `-3` vor `.json`, und er schreibt atomar: neue Datei, dann umbenennen. Bei einem Fehler wird nichts geschrieben, und die Meldung nennt die Stelle wie `pruefe_links.py`.
+
+**L-11 Gleichzeitig bearbeiten.** Hat jemand anders seit dem Laden der Ansicht gespeichert, lehnt der Dienst das Speichern ab: „Inzwischen hat NAME um HH:MM gespeichert. Bitte neu laden; Ihre Änderungen gehen dabei verloren.“ Die Meldung bietet „Neu laden“. Grundlage ist eine Versionsnummer, die bei jedem Speichern wächst.
+
+**L-12 Protokoll.** Jedes Speichern schreibt eine Zeile in `protokoll.jsonl` neben `sicherungen/`: Zeit, Name, Zahl der neuen, geänderten und gelöschten Links und Bereiche, Name der Sicherung. Die Admin-Ansicht zeigt die letzten 20 Einträge im Reiter „Verlauf“.
+
+**L-13 Sicherheit.** Alle Texte werden als Text eingesetzt wie in F-03. Die Admin-Seite lädt nichts von fremden Servern und hat kein Inline-Skript (N-02, B-03). Jede schreibende Anfrage braucht die Sitzung und zusätzlich einen Token im Kopf `X-CSRF-Token`, den die Seite nach der Anmeldung erhält. Die Schnittstelle nimmt nur JSON bis 256 KB an.
+
+**L-14 Gestaltung.** Nach `docs/DESIGN.md`: Felder wie das Suchfeld, Buttons wie „Speichern“ im Vorname-Formular, Abschnittsüberschriften wie auf der Startseite. Bedienbar mit der Tastatur (N-03): Nach der Anmeldung steht der Fokus in der Suche, ein Link lässt sich ganz ohne Maus anlegen. Bei 360 px ohne waagerechtes Scrollen (N-04), die Adresse bleibt in der Zeile sichtbar.
+
+**L-15 Sicherung zurückholen.** Im Reiter „Verlauf“ stehen unter dem Protokoll die letzten 20 Sicherungen mit Zeit und Name dessen, der danach gespeichert hat, je mit dem Button „Diesen Stand zurückholen“. Er fragt im eigenen Fenster nach, „Abbrechen“ ist vorgewählt: „Stand von TT.MM. HH:MM zurückholen? Nicht gespeicherte Änderungen gehen verloren.“ Er verlangt „Ihr Name“ wie L-10. Zurückholen ist ein Speichern: Der Dienst prüft die Sicherung mit V-01 bis V-10, legt vorher eine Sicherung des aktuellen Stands an, setzt `stand` auf heute und schreibt ins Protokoll „Stand von TT.MM. HH:MM zurückgeholt“. Ältere Sicherungen bleiben auf dem Server liegen; nur die Ansicht zeigt 20.
