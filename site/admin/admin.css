@@ -1,0 +1,997 @@
+/* Admin-Ansicht (L-14): baut auf site/styles.css auf und übernimmt deren Farben,
+   Schrift und Formen aus docs/DESIGN.md. Keine Schatten, keine Verläufe, keine
+   Animationen. */
+
+/* „hidden“ gilt auch dort, wo eine Regel unten display setzt. */
+[hidden] {
+  display: none !important;
+}
+
+.admin {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.pflege {
+  flex: 1 0 auto;
+}
+
+select:focus-visible,
+.eintrag:focus-visible {
+  outline: 2px solid var(--rot-text);
+  outline-offset: 2px;
+}
+
+/* ---- Kopf ------------------------------------------------------------------ */
+
+.admin .kopf-innen {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.kopf-logos {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.admin .logo-wmc,
+.admin .logo-wma {
+  height: 32px;
+}
+
+.admin .kopf-trenner {
+  height: 28px;
+}
+
+.admin h1 {
+  margin: 0 0 0 auto;
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-align: right;
+}
+
+/* ---- Buttons und Felder ------------------------------------------------------ */
+
+.btn {
+  appearance: none;
+  height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--linie-element);
+  border-radius: var(--radius-klein);
+  background: var(--flaeche);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--flaeche-grau);
+}
+
+.btn-haupt {
+  border-color: var(--rot-text);
+  background: var(--rot-text);
+  color: var(--flaeche);
+}
+
+.btn-haupt:hover:not(:disabled) {
+  border-color: var(--rot-dunkel);
+  background: var(--rot-dunkel);
+}
+
+.btn:disabled {
+  border-color: var(--linie);
+  background: var(--flaeche);
+  color: var(--symbol);
+  cursor: default;
+}
+
+.btn-text {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-klein);
+  background: none;
+  color: var(--rot-text);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-text:hover {
+  color: var(--rot-dunkel);
+}
+
+.btn-text svg,
+.symbol-knopf svg,
+.filter svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.symbol-knopf {
+  appearance: none;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-klein);
+  background: none;
+  color: var(--symbol);
+  cursor: pointer;
+}
+
+.symbol-knopf:hover:not(:disabled) {
+  background: var(--flaeche-grau);
+  color: var(--text);
+}
+
+.link-zeile:hover .symbol-knopf:hover:not(:disabled) {
+  background: var(--linie);
+}
+
+.symbol-knopf:disabled {
+  color: var(--linie);
+  cursor: default;
+}
+
+.symbol-knopf.griff {
+  width: 28px;
+  cursor: grab;
+}
+
+.symbol-knopf.griff svg {
+  stroke-width: 2.6;
+}
+
+.stern svg {
+  width: 20px;
+  height: 20px;
+}
+
+.stern[aria-pressed="true"],
+.stern[aria-pressed="true"]:hover:not(:disabled) {
+  color: var(--rot-text);
+}
+
+.stern[aria-pressed="true"] svg {
+  stroke: var(--rot-text);
+  fill: var(--rot-text);
+}
+
+/* Auf der Maus zieht man; ohne Maus gibt es die Pfeile. */
+.nur-beruehrung {
+  display: none;
+}
+
+input[type="text"],
+input[type="search"],
+input[type="password"],
+select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--linie-element);
+  border-radius: var(--radius-klein);
+  background-color: var(--flaeche);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  line-height: 20px;
+}
+
+input::placeholder {
+  color: var(--symbol);
+}
+
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--sekundaer);
+}
+
+.handlung {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hinweis {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sekundaer);
+}
+
+.meldung {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--sekundaer);
+  white-space: pre-line;
+}
+
+/* site/styles.css zeichnet .fehler als Kasten (Fehler beim Laden der Liste);
+   eine Meldung unter einem Feld ist nur roter Text. */
+.meldung.fehler {
+  display: block;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: none;
+  color: var(--rot-text);
+}
+
+.meldung.ok {
+  color: var(--text);
+}
+
+.feld .meldung {
+  min-height: 18px;
+  margin-top: 2px;
+}
+
+/* ---- Anmeldung ----------------------------------------------------------------- */
+
+.anmeldung {
+  width: calc(100% - 32px);
+  max-width: 360px;
+  margin: 56px auto;
+  padding: 24px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-mittel);
+}
+
+.anmeldung h2,
+.tafel h2 {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rot-text);
+}
+
+.anmeldung form {
+  margin-top: 16px;
+}
+
+.anmeldung .meldung {
+  min-height: 18px;
+  margin-top: 6px;
+}
+
+.anmeldung .handlung {
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+/* ---- Leiste: immer sichtbar ---------------------------------------------------------- */
+
+.leiste {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--flaeche);
+  border-bottom: 1px solid var(--linie);
+}
+
+.leiste-innen {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 24px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+}
+
+.reiter {
+  display: flex;
+  gap: 4px;
+}
+
+.reiter button {
+  appearance: none;
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--sekundaer);
+  font: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.reiter button:hover {
+  color: var(--text);
+}
+
+.reiter button[aria-selected="true"] {
+  border-bottom-color: var(--rot-text);
+  color: var(--rot-text);
+}
+
+.leiste-handlung {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.status {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--sekundaer);
+}
+
+.status.ungespeichert {
+  color: var(--rot-text);
+  font-weight: 600;
+}
+
+.leiste-handlung input {
+  width: 150px;
+}
+
+.leiste-meldung {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.leiste-meldung .meldung {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 8px;
+}
+
+.leiste-meldung .meldung:empty {
+  display: none;
+}
+
+/* ---- Tafel „Links“ ------------------------------------------------------------------------ */
+
+.tafel {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 24px 48px;
+}
+
+.werkzeuge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filter {
+  position: relative;
+  flex: 1 1 auto;
+}
+
+.filter svg {
+  position: absolute;
+  left: 12px;
+  top: 11px;
+  color: var(--symbol);
+}
+
+.filter input {
+  padding-left: 40px;
+}
+
+.favoriten {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 20px;
+}
+
+.favoriten-liste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.favoriten-liste .eintrag {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 32px;
+  padding: 0 2px 0 10px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-etikett);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  cursor: grab;
+}
+
+.favoriten-liste .symbol-knopf {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-etikett);
+}
+
+.favoriten-liste .symbol-knopf svg {
+  width: 14px;
+  height: 14px;
+}
+
+#kein-treffer {
+  margin-top: 24px;
+}
+
+.bereiche {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.bereich {
+  position: relative;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-mittel);
+  background: var(--flaeche);
+}
+
+.bereich-kopf {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px 6px 4px;
+  border-bottom: 1px solid var(--linie);
+  border-radius: var(--radius-mittel) var(--radius-mittel) 0 0;
+}
+
+.bereich[data-marke="wma"] .bereich-kopf {
+  border-bottom-color: var(--academy-rahmen);
+  background: var(--academy-flaeche);
+}
+
+.bereich-kopf h3 {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+}
+
+.bereich-kopf .bereich-titel {
+  height: 36px;
+  padding: 0 8px;
+  border-color: transparent;
+  background: transparent;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.bereich-kopf .bereich-titel:hover {
+  border-color: var(--linie);
+}
+
+.bereich-kopf .bereich-titel:focus {
+  border-color: var(--linie-element);
+  background: var(--flaeche);
+}
+
+.bereich-kopf .marke {
+  flex: 0 0 auto;
+  width: auto;
+  height: 28px;
+  padding: 0 4px 0 8px;
+  border-color: var(--linie);
+  border-radius: var(--radius-etikett);
+  background-color: var(--flaeche);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--sekundaer);
+  cursor: pointer;
+}
+
+.links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link-zeile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px 4px 4px;
+  border-top: 1px solid var(--flaeche-grau);
+  background: var(--flaeche);
+  scroll-margin-top: 80px;
+  scroll-margin-bottom: 16px;
+}
+
+.links > .link-zeile:first-child {
+  border-top: 0;
+}
+
+.link-zeile:hover {
+  background: var(--flaeche-grau);
+}
+
+.gezogen {
+  opacity: 0.4;
+}
+
+/* Wo der gezogene Eintrag landet. */
+.ziel-vor::before,
+.ziel-nach::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--rot-text);
+}
+
+.ziel-vor::before {
+  top: -1px;
+}
+
+.ziel-nach::after {
+  bottom: -1px;
+}
+
+.favoriten-liste .ziel-vor::before,
+.favoriten-liste .ziel-nach::after {
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  height: auto;
+}
+
+.favoriten-liste .ziel-vor::before {
+  left: -5px;
+  right: auto;
+}
+
+.favoriten-liste .ziel-nach::after {
+  left: auto;
+  right: -5px;
+}
+
+.kuerzel {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-klein);
+  background: var(--flaeche-grau);
+  color: var(--sekundaer);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 700;
+}
+
+.link-zeile:hover .kuerzel {
+  background: var(--flaeche);
+}
+
+.bereich[data-marke="wma"] .kuerzel {
+  background: var(--academy-flaeche);
+  color: var(--rot-text);
+}
+
+.kuerzel-auto {
+  font-weight: 400;
+}
+
+.zeile-text {
+  appearance: none;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 2px 4px;
+  border: 0;
+  border-radius: var(--radius-klein);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: text;
+}
+
+.zeile-text .name {
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zeile-text .beschreibung {
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--sekundaer);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adresse {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 18px;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.adresse:hover {
+  text-decoration: underline;
+}
+
+.link-neu {
+  position: relative;
+  padding: 2px 8px;
+  border-top: 1px solid var(--flaeche-grau);
+}
+
+.links > .link-neu:first-child {
+  border-top: 0;
+}
+
+/* ---- Zeile im Bearbeiten ------------------------------------------------------------------- */
+
+.link-zeile.bearbeitet,
+.link-zeile.bearbeitet:hover {
+  display: block;
+  padding: 12px;
+  background: var(--flaeche-grau);
+}
+
+.felder {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1.4fr) 80px minmax(0, 0.9fr);
+  gap: 4px 12px;
+}
+
+.formular .handlung {
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.formular .handlung .hinweis {
+  margin-right: auto;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.bereich-neu {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 160px auto;
+  align-items: start;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 12px;
+  border: 1px dashed var(--linie-element);
+  border-radius: var(--radius-mittel);
+}
+
+.bereich-neu .handlung {
+  gap: 8px;
+  margin-top: 22px;
+}
+
+/* ---- Tafel „Verlauf“ und „Hilfe-Link“ ----------------------------------------------------------- */
+
+.abschnitt + .abschnitt {
+  margin-top: 40px;
+}
+
+.abschnitt .hinweis {
+  margin-top: 4px;
+}
+
+.tabelle {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.tabelle th,
+.tabelle td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--linie);
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.tabelle th {
+  color: var(--sekundaer);
+  font-weight: 600;
+}
+
+.tabelle td.zeit {
+  color: var(--sekundaer);
+  white-space: nowrap;
+}
+
+.sicherungen-liste {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sicherungen-liste .eintrag {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--linie);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.sicherungen-liste .zeit {
+  color: var(--sekundaer);
+}
+
+.sicherungen-liste .name-person {
+  flex: 1 1 auto;
+}
+
+.hilfe form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  gap: 4px 12px;
+  max-width: 800px;
+  margin-top: 16px;
+}
+
+/* ---- Hinweisband und Nachfrage ---------------------------------------------------------------- */
+
+.hinweis-band {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 3;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100% - 32px);
+  padding: 8px 12px 8px 16px;
+  border-radius: var(--radius-mittel);
+  background: var(--text);
+  color: var(--flaeche);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.hinweis-band .btn-text,
+.hinweis-band .btn-text:hover {
+  color: var(--flaeche);
+  text-decoration: underline;
+}
+
+#nachfrage {
+  max-width: 440px;
+  padding: 24px;
+  border: 1px solid var(--linie-element);
+  border-radius: var(--radius-mittel);
+  color: var(--text);
+}
+
+#nachfrage p {
+  margin: 0 0 20px;
+}
+
+#nachfrage .handlung {
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ---- Schmale Bildschirme und Bedienung ohne Maus ------------------------------------------------ */
+
+@media (hover: none) {
+  .nur-beruehrung {
+    display: inline-flex;
+  }
+
+  .symbol-knopf.griff {
+    display: none;
+  }
+
+  .bereich-kopf {
+    padding-left: 8px;
+  }
+
+  .link-zeile {
+    padding-left: 8px;
+  }
+}
+
+@media (max-width: 900px) {
+  .felder {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 599px) {
+  .admin h1 {
+    width: 100%;
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .leiste {
+    position: static;
+  }
+
+  .leiste-innen,
+  .leiste-meldung {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .leiste-handlung {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .status {
+    width: 100%;
+    order: -2;
+  }
+
+  .leiste-handlung input {
+    flex: 1 1 100%;
+    order: -1;
+    width: auto;
+  }
+
+  .leiste-handlung .btn {
+    flex: 1 1 0;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .tafel {
+    padding: 16px 16px 32px;
+  }
+
+  .werkzeuge {
+    flex-wrap: wrap;
+  }
+
+  .link-zeile {
+    flex-wrap: wrap;
+  }
+
+  .zeile-text {
+    flex: 1 1 calc(100% - 96px);
+  }
+
+  /* Griff, Kürzel und Abstände: die Adresse steht unter dem Namen. */
+  .adresse {
+    flex: 1 1 100%;
+    padding-left: 84px;
+  }
+
+  .link-zeile .handlung {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .bereich-kopf {
+    flex-wrap: wrap;
+  }
+
+  .bereich-kopf h3 {
+    flex: 1 1 calc(100% - 44px);
+  }
+
+  .bereich-kopf .marke {
+    margin-right: auto;
+  }
+
+  .felder,
+  .hilfe form,
+  .bereich-neu {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .bereich-neu .handlung {
+    margin-top: 0;
+    justify-content: flex-end;
+  }
+
+  .formular .handlung {
+    flex-wrap: wrap;
+  }
+
+  .formular .handlung .hinweis {
+    width: 100%;
+  }
+
+  /* Tabelle als Blöcke, Spaltennamen vor dem Wert (N-04). */
+  .tabelle thead {
+    display: none;
+  }
+
+  .tabelle,
+  .tabelle tbody,
+  .tabelle tr,
+  .tabelle td {
+    display: block;
+    width: 100%;
+  }
+
+  .tabelle tr {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--linie);
+  }
+
+  .tabelle td {
+    padding: 2px 0;
+    border-bottom: 0;
+  }
+
+  .tabelle td[data-spalte]::before {
+    content: attr(data-spalte) ": ";
+    color: var(--sekundaer);
+    font-weight: 600;
+  }
+}
+
+@media (hover: none) and (max-width: 599px) {
+  .adresse {
+    padding-left: 48px;
+  }
+}
