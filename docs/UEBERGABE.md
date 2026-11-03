@@ -218,7 +218,7 @@ Bekannt und nicht geändert: Ein neuer Bereich braucht mindestens einen Link, be
 
 ## Neue Pflegeansicht der Werkbank am 02.11.2026
 
-Erwin am 02.11.2026: Das Formular sei nicht zeitgemäß und die Pflege anstrengend. Die Werkbank hat `site/admin/` neu gebaut, im Labor gezeigt, Erwin hat sie freigegeben („Freigegeben“). Der Dienst `admin/` und das Schema sind unverändert. Die geänderten Kriterien stehen in der Notiz A-0105 im Abschnitt „Neue Pflegeansicht“.
+Erwin am 02.11.2026: Das Formular sei nicht zeitgemäß und die Pflege anstrengend. Die Werkbank hat `site/admin/` neu gebaut, im Labor gezeigt, Erwin hat sie freigegeben („Freigegeben“). Der Dienst `admin/` und das Schema sind unverändert. Die Kriterien in dieser Fassung stehen in `docs/ANFORDERUNGEN.md`, Abschnitt 12; die Zeilen L-01 bis L-15 weiter oben beschreiben den Stand vor dem 02.11.
 
 | Vorher | Jetzt | Betrifft |
 |---|---|---|
