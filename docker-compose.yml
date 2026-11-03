@@ -32,6 +32,9 @@ services:
     image: python:3.12-slim
     container_name: wmc-startseite-admin
     working_dir: /srv/startseite
+    environment:
+      # Zeiten in Protokoll, Sicherungen und Meldungen (L-11, L-12, L-15); das Bild läuft sonst in UTC.
+      TZ: Europe/Berlin
     command: python3 admin/dienst.py --adresse 0.0.0.0 --port 8081
       --daten /srv/startseite/daten
       --sicherungen /srv/startseite/sicherungen
